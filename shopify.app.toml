@@ -1,0 +1,29 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "your-client-id"
+name = "relay"
+application_url = "https://placeholder.ngrok-free.app"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "your-dev-store.myshopify.com"
+include_config_on_deploy = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products,read_products"
+
+# Ensure that "use_legacy_install_flow" is set to false or is omitted to use Shopify managed installation.
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [
+  "https://placeholder.ngrok-free.app/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2025-01"
+
+[pos]
+embedded = false
