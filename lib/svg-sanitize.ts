@@ -4,7 +4,6 @@ const SCRIPT_TAG = /<script[\s\S]*?<\/script>/gi;
 const FOREIGN_OBJECT_TAG = /<foreignObject[\s\S]*?<\/foreignObject>/gi;
 const EVENT_HANDLER_ATTR = /\s(on\w+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
 const JAVASCRIPT_URI = /javascript:/gi;
-const SVG_ROOT = /<svg[\s>]/i;
 
 export function sanitizeSvg(svg: string): string {
   const trimmed = svg.trim();
@@ -19,7 +18,7 @@ export function sanitizeSvg(svg: string): string {
     .replace(EVENT_HANDLER_ATTR, "")
     .replace(JAVASCRIPT_URI, "");
 
-  if (!SVG_ROOT.test(cleaned)) {
+  if (!/<svg[\s>]/i.test(cleaned)) {
     return "";
   }
 
