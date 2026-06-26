@@ -1,36 +1,68 @@
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface BrandLogoProps {
   className?: string;
   size?: number;
-  variant?:
-    | "black-back"
-    | "white-back"
-    | "black-stroke-transparent"
-    | "white-stroke-transparent";
+  variant?: "solid" | "outline" | "mono-light";
 }
 
-const LOGO_PATHS = {
-  "black-back": "/brand/black-back.png",
-  "white-back": "/brand/white-back.png",
-  "black-stroke-transparent": "/brand/black-stokre-transparent.png",
-  "white-stroke-transparent": "/brand/white-stroke-transparent.png",
-} as const;
+type LogoVariant = NonNullable<BrandLogoProps["variant"]>;
+
+const BG_FILLS: Record<LogoVariant, string> = {
+  solid: "#111111",
+  outline: "transparent",
+  "mono-light": "#ffffff",
+};
+
+const STROKES: Record<LogoVariant, string | undefined> = {
+  solid: undefined,
+  outline: "#111111",
+  "mono-light": undefined,
+};
+
+const PATH_FILLS: Record<LogoVariant, string> = {
+  solid: "#ffffff",
+  outline: "#111111",
+  "mono-light": "#111111",
+};
+
+const CIRCLE_FILLS: Record<LogoVariant, string> = {
+  solid: "#111111",
+  outline: "#ffffff",
+  "mono-light": "#111111",
+};
 
 export function BrandLogo({
   className,
   size = 40,
-  variant = "black-back",
+  variant = "solid",
 }: BrandLogoProps) {
+  const stroke = STROKES[variant];
+
   return (
-    <Image
-      alt="Presswall"
-      className={cn("rounded-md", className)}
+    <svg
+      aria-label="Presswall"
+      className={cn("shrink-0", className)}
+      fill="none"
       height={size}
-      priority
-      src={LOGO_PATHS[variant]}
+      role="img"
+      viewBox="0 0 48 48"
       width={size}
-    />
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect
+        fill={BG_FILLS[variant]}
+        height={48}
+        rx={12}
+        stroke={stroke}
+        strokeWidth={stroke ? 2 : undefined}
+        width={48}
+      />
+      <path
+        d="M16 35V13h8.5c4.7 0 7.5 2.8 7.5 7s-2.8 7-7.5 7H21v8h-5z"
+        fill={PATH_FILLS[variant]}
+      />
+      <circle cx={20.5} cy={20} fill={CIRCLE_FILLS[variant]} r={2.5} />
+    </svg>
   );
 }

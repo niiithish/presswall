@@ -46,21 +46,31 @@ export type ShopPublisherSelection = z.infer<
   typeof shopPublisherSelectionSchema
 >;
 
-export type PublisherCatalogItem = {
-  id: string;
-  name: string;
-  category: string;
-  logoSvg: string;
-  logoMonoSvg: string;
-  websiteUrl: string | null;
-};
+export interface SelectedPublisher {
+  customLogoSvg?: string;
+  customName?: string;
+  customUrl?: string;
+  key: string;
+  publisherId?: string;
+}
 
-export type StorefrontPublisher = {
+export interface PublisherCatalogItem {
+  category: string;
   id: string;
-  name: string;
+  logoMonoSvg: string;
   logoSvg: string;
+  name: string;
+  websiteUrl: string | null;
+}
+
+export interface StorefrontPublisher {
+  id: string;
+  isCustom: boolean;
+  logoImageUrl: string | null;
+  logoSvg: string;
+  name: string;
   url: string | null;
-};
+}
 
 export type StorefrontPayload = PresswallConfig & {
   publishers: StorefrontPublisher[];

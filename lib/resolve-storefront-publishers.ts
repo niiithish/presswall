@@ -1,3 +1,4 @@
+import { isBundledPublisherId } from "@/lib/bundled-publishers";
 import type {
   PresswallConfig,
   PublisherCatalogItem,
@@ -5,6 +6,7 @@ import type {
   StorefrontPublisher,
 } from "@/lib/presswall-types";
 import { isSafeHttpUrl } from "@/lib/presswall-validation";
+import { absoluteBundledLogoUrl } from "@/lib/publisher-logo-path";
 import { sanitizeSvg } from "@/lib/svg-sanitize";
 
 function resolvePublisherUrl(
@@ -20,31 +22,30 @@ function resolvePublisherUrl(
 }
 
 export function resolveStorefrontPublishers(
-  config: PresswallConfig,
+  _config: PresswallConfig,
   catalog: PublisherCatalogItem[],
   selections: ShopPublisherSelection[]
 ): StorefrontPublisher[] {
   const catalogById = new Map(catalog.map((item) => [item.id, item]));
 
   return selections
-    .map((selection, index) => {
+    .map((selection, index): StorefrontPublisher | null => {
       if (selection.publisherId) {
         const publisher = catalogById.get(selection.publisherId);
         if (!publisher) {
           return null;
         }
 
-        const logoSvg =
-          config.colorMode === "color"
-            ? publisher.logoSvg
-            : publisher.logoMonoSvg;
-
         return {
           id: publisher.id,
+          isCustom: false,
           name: publisher.name,
-          logoSvg: sanitizeSvg(logoSvg),
+          logoImageUrl: isBundledPublisherId(publisher.id)
+            ? absoluteBundledLogoUrl(publisher.id)
+            : null,
+          logoSvg: "",
           url: resolvePublisherUrl(selection.customUrl, publisher.websiteUrl),
-        } satisfies StorefrontPublisher;
+        };
       }
 
       if (!selection.customName?.trim()) {
@@ -53,10 +54,12 @@ export function resolveStorefrontPublishers(
 
       return {
         id: `custom-${index}`,
+        isCustom: true,
         name: selection.customName.trim(),
+        logoImageUrl: null,
         logoSvg: sanitizeSvg(selection.customLogoSvg ?? ""),
         url: resolvePublisherUrl(selection.customUrl, null),
-      } satisfies StorefrontPublisher;
+      };
     })
     .filter(
       (publisher): publisher is StorefrontPublisher => publisher !== null

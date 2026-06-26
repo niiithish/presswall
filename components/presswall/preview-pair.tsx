@@ -7,13 +7,11 @@ import type {
   ShopPublisherSelection,
 } from "@/lib/presswall-types";
 
-type PreviewPairProps = {
-  config: PresswallConfig;
+interface PreviewPairProps {
   catalog: PublisherCatalogItem[];
+  config: PresswallConfig;
   selections: ShopPublisherSelection[];
-};
-
-const PREVIEW_THEMES = ["light", "dark"] as const;
+}
 
 export function PresswallPreviewPair({
   config,
@@ -21,16 +19,10 @@ export function PresswallPreviewPair({
   selections,
 }: PreviewPairProps) {
   return (
-    <>
-      {PREVIEW_THEMES.map((theme) => (
-        <PresswallPreview
-          catalog={catalog}
-          config={config}
-          key={theme}
-          selections={selections}
-          theme={theme}
-        />
-      ))}
-    </>
+    <PresswallPreview
+      catalog={catalog}
+      config={config}
+      selections={selections}
+    />
   );
 }

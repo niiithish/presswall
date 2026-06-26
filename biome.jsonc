@@ -4,5 +4,17 @@
     "ultracite/biome/core",
     "ultracite/biome/react",
     "ultracite/biome/next"
+  ],
+  "overrides": [
+    {
+      "includes": ["components/presswall/svg-logo.tsx"],
+      "linter": {
+        "rules": {
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          }
+        }
+      }
+    }
   ]
 }

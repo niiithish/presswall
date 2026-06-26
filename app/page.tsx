@@ -12,17 +12,16 @@ import { ensurePublisherCatalogSeeded } from "@/lib/presswall-service";
 
 export const dynamic = "force-dynamic";
 
-type PageProps = {
+interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
+}
 
-function AppEmptyState({
-  title,
-  description,
-}: {
-  title: string;
+interface AppEmptyStateProps {
   description: string;
-}) {
+  title: string;
+}
+
+function AppEmptyState({ title, description }: AppEmptyStateProps) {
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
       <Empty className="max-w-md border">

@@ -4,8 +4,7 @@
   const SVG_ROOT = /<svg[\s>]/i;
   const SCRIPT_TAG = /<script[\s\S]*?<\/script>/gi;
   const FOREIGN_OBJECT_TAG = /<foreignObject[\s\S]*?<\/foreignObject>/gi;
-  const EVENT_HANDLER_ATTR =
-    /\s(on\w+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
+  const EVENT_HANDLER_ATTR = /\s(on\w+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
   const JAVASCRIPT_URI = /javascript:/gi;
 
   const roots = document.querySelectorAll("[data-presswall-root]");
@@ -87,9 +86,11 @@
 
   function renderLogo(publisher, config, logoStyle) {
     const height = sanitizeCssSize(config.logoHeight, 32);
-    const content = publisher.logoSvg
-      ? renderSvgLogo(publisher.logoSvg)
-      : `<span>${escapeHtml(publisher.name)}</span>`;
+    const content = publisher.logoImageUrl
+      ? `<img alt="" class="presswall-logo-img" src="${escapeHtml(publisher.logoImageUrl)}" />`
+      : publisher.logoSvg
+        ? renderSvgLogo(publisher.logoSvg)
+        : `<span>${escapeHtml(publisher.name)}</span>`;
 
     const safeUrl = sanitizeUrl(publisher.url);
     const linked = safeUrl
@@ -111,7 +112,7 @@
   function getLogoStyle(config) {
     if (config.colorMode === "muted") {
       const opacity = sanitizeCssSize(config.grayscaleOpacity, 70) / 100;
-      return `filter:grayscale(100%) opacity(${opacity})`;
+      return `filter:grayscale(100%);opacity:${opacity}`;
     }
 
     if (config.colorMode === "mono") {

@@ -1,12 +1,9 @@
 import "@shopify/shopify-api/adapters/web-api";
 import { ApiVersion, shopifyApi } from "@shopify/shopify-api";
+import { getAppUrl } from "@/lib/app-url";
 import { sessionStorage } from "@/lib/session-storage";
 
-function getAppUrl(): string {
-  return (
-    process.env.SHOPIFY_APP_URL ?? process.env.HOST ?? "http://localhost:3000"
-  );
-}
+export { getAppUrl };
 
 const appUrl = getAppUrl();
 const apiKey = process.env.SHOPIFY_API_KEY ?? "";

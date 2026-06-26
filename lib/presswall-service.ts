@@ -1,4 +1,5 @@
 import { asc, eq, inArray } from "drizzle-orm";
+import { isBundledPublisherId } from "@/lib/bundled-publishers";
 import { DEFAULT_PRESSWALL_CONFIG } from "@/lib/presswall-defaults";
 import type {
   PresswallConfig,
@@ -110,14 +111,16 @@ export async function getPublisherCatalog(): Promise<PublisherCatalogItem[]> {
     .from(publishers)
     .orderBy(asc(publishers.sortOrder), asc(publishers.name));
 
-  return rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    category: row.category,
-    logoSvg: row.logoSvg,
-    logoMonoSvg: row.logoMonoSvg,
-    websiteUrl: row.websiteUrl,
-  }));
+  return rows
+    .filter((row) => isBundledPublisherId(row.id))
+    .map((row) => ({
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      logoSvg: row.logoSvg,
+      logoMonoSvg: row.logoMonoSvg,
+      websiteUrl: row.websiteUrl,
+    }));
 }
 
 export async function getShopConfig(shop: string): Promise<PresswallConfig> {
