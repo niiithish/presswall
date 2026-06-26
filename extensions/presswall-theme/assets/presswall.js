@@ -1,12 +1,12 @@
-(function presswallInit() {
-  const HEX_COLOR = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
-  const RGB_COLOR = /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/;
-  const SVG_ROOT = /<svg[\s>]/i;
-  const SCRIPT_TAG = /<script[\s\S]*?<\/script>/gi;
-  const FOREIGN_OBJECT_TAG = /<foreignObject[\s\S]*?<\/foreignObject>/gi;
-  const EVENT_HANDLER_ATTR = /\s(on\w+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
-  const JAVASCRIPT_URI = /javascript:/gi;
+const HEX_COLOR = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+const RGB_COLOR = /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/;
+const SVG_ROOT = /<svg[\s>]/i;
+const SCRIPT_TAG = /<script[\s\S]*?<\/script>/gi;
+const FOREIGN_OBJECT_TAG = /<foreignObject[\s\S]*?<\/foreignObject>/gi;
+const EVENT_HANDLER_ATTR = /\s(on\w+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
+const JAVASCRIPT_URI = /javascript:/gi;
 
+(function presswallInit() {
   const roots = document.querySelectorAll("[data-presswall-root]");
   if (!roots.length) {
     return;
@@ -86,11 +86,14 @@
 
   function renderLogo(publisher, config, logoStyle) {
     const height = sanitizeCssSize(config.logoHeight, 32);
-    const content = publisher.logoImageUrl
-      ? `<img alt="" class="presswall-logo-img" src="${escapeHtml(publisher.logoImageUrl)}" />`
-      : publisher.logoSvg
-        ? renderSvgLogo(publisher.logoSvg)
-        : `<span>${escapeHtml(publisher.name)}</span>`;
+    let content;
+    if (publisher.logoImageUrl) {
+      content = `<img alt="" class="presswall-logo-img" src="${escapeHtml(publisher.logoImageUrl)}" />`;
+    } else if (publisher.logoSvg) {
+      content = renderSvgLogo(publisher.logoSvg);
+    } else {
+      content = `<span>${escapeHtml(publisher.name)}</span>`;
+    }
 
     const safeUrl = sanitizeUrl(publisher.url);
     const linked = safeUrl

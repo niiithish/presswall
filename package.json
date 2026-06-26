@@ -40,6 +40,7 @@
     "lint": "ultracite check",
     "format": "ultracite fix",
     "typecheck": "tsc --noEmit",
+    "test": "bun test --pass-with-no-tests",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
