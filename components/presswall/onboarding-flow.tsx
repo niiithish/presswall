@@ -26,7 +26,7 @@ export function OnboardingFlow({ editor }: OnboardingFlowProps) {
             <div className="mx-auto flex justify-center">
               <OnboardingOutletsStep
                 editor={editor}
-                onContinue={() => setStep(1)}
+                onNext={() => setStep(1)}
               />
             </div>
           ) : null}
@@ -35,7 +35,8 @@ export function OnboardingFlow({ editor }: OnboardingFlowProps) {
             <div className="mx-auto flex justify-center">
               <OnboardingTemplateStep
                 editor={editor}
-                onContinue={() => setStep(2)}
+                onBack={() => setStep(0)}
+                onNext={() => setStep(2)}
               />
             </div>
           ) : null}
@@ -44,6 +45,7 @@ export function OnboardingFlow({ editor }: OnboardingFlowProps) {
             <div className="mx-auto flex justify-center">
               <OnboardingGoLiveStep
                 editor={editor}
+                onBack={() => setStep(1)}
                 onComplete={() => editor.setNeedsOnboarding(false)}
               />
             </div>

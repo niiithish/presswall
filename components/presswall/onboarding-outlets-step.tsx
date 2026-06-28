@@ -1,34 +1,56 @@
 "use client";
 
-import { IconSearch } from "@tabler/icons-react";
+import { IconChevronRight, IconSearch } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { CustomOutletForm } from "@/components/presswall/custom-outlet-form";
-import { OnboardingPreview } from "@/components/presswall/onboarding-preview";
+import { OnboardingActions } from "@/components/presswall/onboarding-actions";
 import { PublisherLogo } from "@/components/presswall/publisher-logo";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { PresswallEditor } from "@/hooks/use-presswall-editor";
-import { ONBOARDING_POPULAR_PUBLISHER_IDS } from "@/lib/onboarding-popular-publishers";
+import type { SelectedPublisher } from "@/lib/presswall-types";
 import { cn } from "@/lib/utils";
 
 interface OnboardingOutletsStepProps {
   editor: PresswallEditor;
-  onContinue: () => void;
+  onNext: () => void;
+}
+
+function CustomLogoTile({
+  editor,
+  item,
+}: {
+  editor: PresswallEditor;
+  item: SelectedPublisher;
+}) {
+  const name = item.customName ?? "Custom outlet";
+
+  return (
+    <button
+      aria-label={`Remove ${name}`}
+      className="flex h-11 items-center justify-center rounded-lg bg-muted/60 px-2 ring-1 ring-foreground transition-colors hover:bg-muted"
+      onClick={() => editor.removePublisher(item.key)}
+      title={`Remove ${name}`}
+      type="button"
+    >
+      <PublisherLogo
+        className="[--logo-height:1.35rem]"
+        customLogoSvg={item.customLogoSvg}
+        name={name}
+      />
+    </button>
+  );
 }
 
 export function OnboardingOutletsStep({
   editor,
-  onContinue,
+  onNext,
 }: OnboardingOutletsStepProps) {
   const [search, setSearch] = useState("");
-  const [showCustom, setShowCustom] = useState(false);
+  const [uploadsOpen, setUploadsOpen] = useState(true);
 
-  const popularPublishers = useMemo(
-    () =>
-      ONBOARDING_POPULAR_PUBLISHER_IDS.map((id) =>
-        editor.catalogById.get(id)
-      ).filter((publisher) => publisher !== undefined),
-    [editor.catalogById]
+  const uploadedLogos = useMemo(
+    () => editor.selected.filter((item) => !item.publisherId),
+    [editor.selected]
   );
 
   const filteredCatalog = useMemo(() => {
@@ -37,6 +59,7 @@ export function OnboardingOutletsStep({
       if (query.length === 0) {
         return true;
       }
+
       return (
         publisher.name.toLowerCase().includes(query) ||
         publisher.category.toLowerCase().includes(query)
@@ -47,137 +70,142 @@ export function OnboardingOutletsStep({
   const canContinue = editor.selected.length > 0;
 
   return (
-    <div className="flex w-full max-w-xl flex-col gap-8">
+    <div className="flex w-full max-w-5xl flex-col gap-6">
       <div className="space-y-2 text-center">
         <h1 className="font-semibold text-2xl tracking-tight">
-          Select your outlets
+          Add your press logos
         </h1>
         <p className="text-muted-foreground text-sm leading-relaxed">
-          Choose the press and media logos to show on your store.
+          Build your logo library on the left — upload your own or add bundled
+          press outlets.
         </p>
       </div>
 
-      <OnboardingPreview
-        catalog={editor.catalog}
-        config={editor.config}
-        scale="md"
-        selections={editor.selections}
-      />
-
-      <div className="space-y-3">
-        <p className="text-center text-muted-foreground text-xs uppercase tracking-[0.2em]">
-          Popular
-        </p>
-        <div className="flex flex-wrap justify-center gap-2">
-          {popularPublishers.map((publisher) => {
-            const selected = editor.selectedIds.has(publisher.id);
-            return (
-              <button
-                className={cn(
-                  "flex items-center gap-2 rounded-full border px-3 py-1.5 transition-colors",
-                  selected
-                    ? "border-foreground bg-muted ring-1 ring-foreground"
-                    : "border-border bg-background hover:bg-muted/60"
-                )}
-                key={publisher.id}
-                onClick={() => editor.togglePublisher(publisher)}
-                type="button"
-              >
-                <PublisherLogo
-                  className="[--logo-height:1rem]"
-                  name={publisher.name}
-                  publisherId={publisher.id}
-                />
-                <span className="text-xs">{publisher.name}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="relative">
-        <IconSearch
-          className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-          stroke={2}
-        />
-        <Input
-          autoComplete="off"
-          className="h-10 pl-9"
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search all outlets..."
-          type="search"
-          value={search}
-        />
-      </div>
-
-      <div className="max-h-52 overflow-y-auto rounded-xl border">
-        <div className="grid gap-0.5 p-1.5">
-          {filteredCatalog.map((publisher) => {
-            const selected = editor.selectedIds.has(publisher.id);
-            return (
-              <button
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors",
-                  selected ? "bg-muted" : "hover:bg-muted/50"
-                )}
-                key={publisher.id}
-                onClick={() => editor.togglePublisher(publisher)}
-                type="button"
-              >
-                <span
-                  className={cn(
-                    "size-4 shrink-0 rounded-full border",
-                    selected
-                      ? "border-foreground bg-foreground"
-                      : "border-muted-foreground/40"
-                  )}
-                />
-                <PublisherLogo
-                  className="[--logo-height:1.5rem]"
-                  name={publisher.name}
-                  publisherId={publisher.id}
-                />
-                <span className="min-w-0 flex-1 truncate text-sm">
-                  {publisher.name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center gap-3">
-        <button
-          className="text-muted-foreground text-xs underline-offset-4 hover:text-foreground hover:underline"
-          onClick={() => setShowCustom((current) => !current)}
-          type="button"
-        >
-          {showCustom ? "Hide custom outlet" : "Add a custom outlet"}
-        </button>
-
-        {showCustom ? (
-          <div className="w-full rounded-xl border p-4">
-            <CustomOutletForm
-              compact
-              onAdd={(name, svg) => {
-                editor.addCustomPublisher(name, svg);
-                setShowCustom(false);
-              }}
-            />
+      <div className="grid min-h-[22rem] gap-4 md:grid-cols-[1.7fr_1fr]">
+        <div className="flex min-h-0 flex-col rounded-xl border bg-card p-4 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <p className="font-medium text-sm">Logo library</p>
+            <p className="text-muted-foreground text-xs">
+              {editor.selected.length} selected
+            </p>
           </div>
-        ) : null}
+
+          <button
+            className="flex w-full items-center gap-2 text-left"
+            onClick={() => setUploadsOpen((open) => !open)}
+            type="button"
+          >
+            <IconChevronRight
+              className={cn(
+                "size-4 shrink-0 text-muted-foreground transition-transform",
+                uploadsOpen && "rotate-90"
+              )}
+              stroke={2}
+            />
+            <span className="font-medium text-xs">Your uploads</span>
+            <span className="text-muted-foreground text-xs">
+              {uploadedLogos.length}
+            </span>
+          </button>
+
+          {uploadsOpen ? (
+            <div className="mt-3 min-h-12">
+              {uploadedLogos.length > 0 ? (
+                <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5 md:grid-cols-6">
+                  {uploadedLogos.map((item) => (
+                    <CustomLogoTile
+                      editor={editor}
+                      item={item}
+                      key={item.key}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className="my-4 border-t" />
+
+          <div className="space-y-3">
+            <div className="space-y-0.5">
+              <p className="font-medium text-xs">Bundled outlets</p>
+              <p className="text-muted-foreground text-xs">
+                {editor.catalog.length} press logos included
+              </p>
+            </div>
+
+            <div className="relative">
+              <IconSearch
+                className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                stroke={2}
+              />
+              <Input
+                autoComplete="off"
+                className="h-9 pl-9"
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search bundled outlets..."
+                type="search"
+                value={search}
+              />
+            </div>
+
+            <div className="max-h-52 overflow-y-auto rounded-lg border p-2">
+              <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5 md:grid-cols-6">
+                {filteredCatalog.map((publisher) => {
+                  const selected = editor.selectedIds.has(publisher.id);
+                  return (
+                    <button
+                      aria-label={publisher.name}
+                      aria-pressed={selected}
+                      className={cn(
+                        "flex h-10 items-center justify-center rounded-lg px-2 transition-colors",
+                        selected
+                          ? "bg-muted ring-1 ring-foreground"
+                          : "hover:bg-muted/50"
+                      )}
+                      key={publisher.id}
+                      onClick={() => editor.togglePublisher(publisher)}
+                      title={publisher.name}
+                      type="button"
+                    >
+                      <PublisherLogo
+                        className="[--logo-height:1.25rem]"
+                        name={publisher.name}
+                        publisherId={publisher.id}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex min-h-0 flex-col rounded-xl border border-foreground/25 border-dashed bg-muted/15 p-4">
+          <div className="mb-4 space-y-1">
+            <p className="font-medium text-sm">Upload a logo</p>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              PNG with a transparent background. Adds under your uploads in the
+              library.
+            </p>
+          </div>
+
+          <CustomOutletForm
+            compact
+            featured
+            onAdd={(name, svg) => {
+              editor.addCustomPublisher(name, svg);
+              setUploadsOpen(true);
+            }}
+          />
+        </div>
       </div>
 
-      <div className="flex justify-center">
-        <Button
-          className="min-w-40"
-          disabled={!canContinue}
-          onClick={onContinue}
-          size="lg"
-        >
-          Continue
-        </Button>
-      </div>
+      <OnboardingActions
+        nextDisabled={!canContinue}
+        nextLabel="Next"
+        onNext={onNext}
+      />
     </div>
   );
 }

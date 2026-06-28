@@ -2,70 +2,122 @@
 
 import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
+import {
+  CustomLogoUploadField,
+  useCustomLogoUploadReset,
+} from "@/components/presswall/custom-logo-upload-field";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { CustomLogoPngError, pngFileToLogoSvg } from "@/lib/custom-logo-png";
 import { LOGO_GUIDANCE } from "@/lib/logo-guidance";
 
 interface CustomOutletFormProps {
   compact?: boolean;
+  featured?: boolean;
   onAdd: (name: string, svg: string) => void;
 }
 
 export function CustomOutletForm({
   onAdd,
   compact = false,
+  featured = false,
 }: CustomOutletFormProps) {
+  const { resetKey, resetUpload } = useCustomLogoUploadReset();
   const [customName, setCustomName] = useState("");
-  const [customSvg, setCustomSvg] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
 
-  const handleAdd = () => {
-    if (!customName.trim()) {
+  const handleAdd = async () => {
+    if (!(customName.trim() && logoFile)) {
       return;
     }
-    onAdd(customName.trim(), customSvg.trim());
-    setCustomName("");
-    setCustomSvg("");
+
+    setIsAdding(true);
+    setError(null);
+
+    try {
+      const svg = await pngFileToLogoSvg(logoFile);
+      onAdd(customName.trim(), svg);
+      setCustomName("");
+      setLogoFile(null);
+      resetUpload();
+    } catch (caught) {
+      setError(
+        caught instanceof CustomLogoPngError
+          ? caught.message
+          : "Could not add that logo. Try another PNG."
+      );
+    } finally {
+      setIsAdding(false);
+    }
   };
+
+  const uploadField = (
+    <CustomLogoUploadField
+      featured={featured}
+      key={resetKey}
+      onError={setError}
+      onFileChange={setLogoFile}
+    />
+  );
+
+  let buttonSize: "default" | "lg" | "sm" = "default";
+  if (featured) {
+    buttonSize = "lg";
+  } else if (compact) {
+    buttonSize = "sm";
+  }
+
+  let buttonLabel = "Add custom outlet";
+  if (isAdding) {
+    buttonLabel = "Adding...";
+  } else if (compact) {
+    buttonLabel = "Add outlet";
+  }
+
+  const addButton = (
+    <Button
+      className={featured ? "h-10 w-full" : undefined}
+      disabled={!(customName.trim() && logoFile) || isAdding}
+      onClick={() => {
+        handleAdd().catch(() => undefined);
+      }}
+      size={buttonSize}
+      variant={compact ? "default" : "outline"}
+    >
+      <IconPlus stroke={2} />
+      {buttonLabel}
+    </Button>
+  );
 
   if (compact) {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-muted-foreground text-xs leading-relaxed">
-          {LOGO_GUIDANCE.summary} Use transparent PNG or SVG assets.
-        </p>
-
         <div className="grid gap-3">
           <div className="grid gap-1.5">
             <Label htmlFor="custom-name">Outlet name</Label>
             <Input
+              className={featured ? "h-10 bg-background" : undefined}
               id="custom-name"
               onChange={(event) => setCustomName(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
-                  handleAdd();
+                  handleAdd().catch(() => undefined);
                 }
               }}
               placeholder="Podcast, local news, blog..."
               value={customName}
             />
           </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="custom-svg">Logo SVG</Label>
-            <Textarea
-              id="custom-svg"
-              onChange={(event) => setCustomSvg(event.target.value)}
-              placeholder="<svg ...>"
-              rows={3}
-              value={customSvg}
-            />
-          </div>
-          <Button disabled={!customName.trim()} onClick={handleAdd} size="sm">
-            <IconPlus stroke={2} />
-            Add outlet
-          </Button>
+
+          {uploadField}
+
+          {error ? <p className="text-destructive text-xs">{error}</p> : null}
+
+          {addButton}
         </div>
       </div>
     );
@@ -90,37 +142,15 @@ export function CustomOutletForm({
         <Input
           id="custom-name"
           onChange={(event) => setCustomName(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              handleAdd();
-            }
-          }}
           placeholder="Podcast, local news, blog..."
           value={customName}
         />
-        <div className="grid gap-2">
-          <Label htmlFor="custom-svg">Logo (SVG recommended)</Label>
-          <Textarea
-            id="custom-svg"
-            onChange={(event) => setCustomSvg(event.target.value)}
-            placeholder='Paste inline SVG with a transparent background, e.g. <svg xmlns="http://www.w3.org/2000/svg" ...>'
-            rows={4}
-            value={customSvg}
-          />
-          <p className="text-muted-foreground text-xs">
-            Transparent PNGs can be embedded as a base64{" "}
-            <code className="rounded bg-muted px-1">&lt;image&gt;</code> inside
-            an SVG if needed.
-          </p>
-        </div>
-        <Button
-          disabled={!customName.trim()}
-          onClick={handleAdd}
-          variant="outline"
-        >
-          <IconPlus stroke={2} />
-          Add custom outlet
-        </Button>
+
+        {uploadField}
+
+        {error ? <p className="text-destructive text-xs">{error}</p> : null}
+
+        {addButton}
       </div>
     </div>
   );

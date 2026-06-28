@@ -2,6 +2,7 @@
 
 import { IconCircleCheck, IconExternalLink } from "@tabler/icons-react";
 import { useCallback, useEffect, useState } from "react";
+import { OnboardingActions } from "@/components/presswall/onboarding-actions";
 import { OnboardingPreview } from "@/components/presswall/onboarding-preview";
 import { Button } from "@/components/ui/button";
 import type { PresswallEditor } from "@/hooks/use-presswall-editor";
@@ -14,6 +15,7 @@ import type { ThemeActivationStatus } from "@/lib/theme-activation";
 
 interface OnboardingGoLiveStepProps {
   editor: PresswallEditor;
+  onBack: () => void;
   onComplete: () => void;
 }
 
@@ -25,6 +27,7 @@ function templatePreviewTheme(
 
 export function OnboardingGoLiveStep({
   editor,
+  onBack,
   onComplete,
 }: OnboardingGoLiveStepProps) {
   const [status, setStatus] = useState<ThemeActivationStatus | null>(null);
@@ -152,20 +155,16 @@ export function OnboardingGoLiveStep({
         {editor.selected.length === 1 ? "" : "s"}
       </p>
 
-      <div className="flex justify-center">
-        <Button
-          className="min-w-40"
-          disabled={
-            editor.isSaving || !(isActive || acknowledged) || isChecking
-          }
-          onClick={() => {
-            handleFinish().catch(() => undefined);
-          }}
-          size="lg"
-        >
-          {editor.isSaving ? "Saving..." : "Open editor"}
-        </Button>
-      </div>
+      <OnboardingActions
+        nextDisabled={!(isActive || acknowledged) || isChecking}
+        nextLabel="Open editor"
+        nextLoading={editor.isSaving}
+        onBack={onBack}
+        onNext={() => {
+          handleFinish().catch(() => undefined);
+        }}
+        showBack
+      />
     </div>
   );
 }

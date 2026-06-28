@@ -25,8 +25,8 @@ export const PUBLISHER_CATEGORIES = [
 ] as const;
 
 export const CUSTOM_LOGO_TIPS = [
-  "Use a transparent PNG or SVG — avoid white or colored box backgrounds.",
+  "Use a transparent PNG — avoid white or colored box backgrounds.",
   "Horizontal logos work best in the press bar and marquee layouts.",
   "Export at 2× resolution (e.g. 400px wide) so logos stay sharp on retina screens.",
-  "SVG is ideal; if using PNG, keep the file under 100 KB per logo.",
+  "Keep each PNG under 2 MB; smaller files upload faster.",
 ] as const;

@@ -1,7 +1,7 @@
 "use client";
 
+import { OnboardingActions } from "@/components/presswall/onboarding-actions";
 import { OnboardingPreview } from "@/components/presswall/onboarding-preview";
-import { Button } from "@/components/ui/button";
 import type { PresswallEditor } from "@/hooks/use-presswall-editor";
 import {
   applyPresswallTemplate,
@@ -12,7 +12,8 @@ import { cn } from "@/lib/utils";
 
 interface OnboardingTemplateStepProps {
   editor: PresswallEditor;
-  onContinue: () => void;
+  onBack: () => void;
+  onNext: () => void;
 }
 
 function templatePreviewTheme(
@@ -23,7 +24,8 @@ function templatePreviewTheme(
 
 export function OnboardingTemplateStep({
   editor,
-  onContinue,
+  onBack,
+  onNext,
 }: OnboardingTemplateStepProps) {
   return (
     <div className="flex w-full max-w-3xl flex-col gap-8">
@@ -36,18 +38,13 @@ export function OnboardingTemplateStep({
         </p>
       </div>
 
-      <OnboardingPreview
-        catalog={editor.catalog}
-        config={editor.config}
-        previewTheme={templatePreviewTheme(editor.selectedTemplateId)}
-        scale="lg"
-        selections={editor.selections}
-      />
-
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {PRESSWALL_TEMPLATES.map((template) => {
           const isSelected = editor.selectedTemplateId === template.id;
-          const previewConfig = applyPresswallTemplate(template.id);
+          const previewConfig = {
+            ...applyPresswallTemplate(template.id),
+            showHeading: false,
+          };
 
           return (
             <button
@@ -80,11 +77,12 @@ export function OnboardingTemplateStep({
         })}
       </div>
 
-      <div className="flex justify-center">
-        <Button className="min-w-40" onClick={onContinue} size="lg">
-          Continue
-        </Button>
-      </div>
+      <OnboardingActions
+        nextLabel="Next"
+        onBack={onBack}
+        onNext={onNext}
+        showBack
+      />
     </div>
   );
 }
