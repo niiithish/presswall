@@ -39,6 +39,7 @@ export const shopConfigs = sqliteTable("shop_configs", {
   colorMode: text("color_mode").notNull().default("mono"),
   layout: text("layout").notNull().default("bar"),
   logoHeight: integer("logo_height").notNull().default(32),
+  logosPerRow: integer("logos_per_row").notNull().default(4),
   gap: integer("gap").notNull().default(24),
   alignment: text("alignment").notNull().default("center"),
   backgroundColor: text("background_color").notNull().default("transparent"),

@@ -1,7 +1,14 @@
 "use client";
 
 import { PublisherLogo } from "@/components/presswall/publisher-logo";
-import { getLogoImageStyle } from "@/lib/presswall-logo-style";
+import {
+  getLogosRowGridClassName,
+  getLogosRowGridStyle,
+} from "@/lib/presswall-layout-style";
+import {
+  getLogoImageStyle,
+  getLogoSlotStyle,
+} from "@/lib/presswall-logo-style";
 import { getPreviewColors } from "@/lib/presswall-preview-colors";
 import type {
   PresswallConfig,
@@ -21,10 +28,10 @@ interface OnboardingPreviewProps {
   selections: ShopPublisherSelection[];
 }
 
-const alignmentClass = {
-  left: "justify-start",
-  center: "justify-center",
-  right: "justify-end",
+const headingAlignmentClass = {
+  left: "text-left",
+  center: "text-center",
+  right: "text-right",
 } as const;
 
 function PreviewLogos({
@@ -68,11 +75,17 @@ function PreviewLogos({
   if (config.layout === "grid") {
     return (
       <div
-        className="grid grid-cols-3"
-        style={{ gap: `${Math.min(config.gap, 16)}px` }}
+        className={getLogosRowGridClassName(config.alignment)}
+        style={getLogosRowGridStyle(
+          config.logosPerRow,
+          Math.min(config.gap, 16)
+        )}
       >
-        {items.slice(0, 6).map((item) => (
-          <div className="flex items-center justify-center" key={item.id}>
+        {items.slice(0, config.logosPerRow * 2).map((item) => (
+          <div
+            className="flex min-w-0 items-center justify-center"
+            key={item.id}
+          >
             {renderLogo(item)}
           </div>
         ))}
@@ -82,13 +95,14 @@ function PreviewLogos({
 
   return (
     <div
-      className={cn(
-        "flex flex-wrap items-center",
-        alignmentClass[config.alignment]
-      )}
-      style={{ gap: `${Math.min(config.gap, 20)}px` }}
+      className={getLogosRowGridClassName(config.alignment)}
+      style={getLogosRowGridStyle(config.logosPerRow, Math.min(config.gap, 20))}
     >
-      {items.slice(0, 5).map((item) => renderLogo(item))}
+      {items.slice(0, config.logosPerRow * 2).map((item) => (
+        <div className="flex min-w-0 items-center justify-center" key={item.id}>
+          {renderLogo(item)}
+        </div>
+      ))}
     </div>
   );
 }
@@ -110,22 +124,16 @@ export function OnboardingPreview({
     scale === "sm" ? Math.min(config.logoHeight, 20) : config.logoHeight;
 
   const renderLogo = (item: StorefrontPublisher) => {
-    const logoContainerStyle = {
-      ...logoStyle,
-      "--logo-height": `${logoHeight}px`,
-      height: `${logoHeight}px`,
-      maxWidth: scale === "sm" ? "72px" : "120px",
-    } as React.CSSProperties;
+    const maxWidth = scale === "sm" ? 72 : 160;
 
     return (
       <PublisherLogo
-        className="flex shrink-0 items-center"
         customLogoSvg={item.isCustom ? item.logoSvg || undefined : undefined}
         key={item.id}
         logoImageUrl={item.logoImageUrl}
         name={item.name}
         publisherId={item.isCustom ? undefined : item.id}
-        style={logoContainerStyle}
+        style={getLogoSlotStyle(logoHeight, maxWidth, logoStyle)}
       />
     );
   };
@@ -149,6 +157,7 @@ export function OnboardingPreview({
         <p
           className={cn(
             "font-medium uppercase tracking-[0.28em]",
+            headingAlignmentClass[config.alignment],
             scale === "sm" ? "mb-2 text-[8px]" : "mb-3 text-[10px]"
           )}
           style={{ color: previewColors.textColor }}

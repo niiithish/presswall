@@ -5,8 +5,15 @@ import {
   IconAlignCenter,
   IconAlignLeft,
   IconAlignRight,
+  IconChevronDown,
 } from "@tabler/icons-react";
+import { useState } from "react";
 import { ColorField } from "@/components/presswall/color-field";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import type { PresswallConfig } from "@/lib/presswall-types";
@@ -40,6 +46,15 @@ const ALIGNMENT_OPTIONS: {
   { value: "right", icon: IconAlignRight, label: "Right" },
 ];
 
+type CustomSectionId = "heading" | "layout" | "look" | "spacing";
+
+const DEFAULT_OPEN_SECTIONS: Record<CustomSectionId, boolean> = {
+  heading: true,
+  layout: true,
+  look: false,
+  spacing: false,
+};
+
 interface OnboardingTemplateCustomControlsProps {
   config: PresswallConfig;
   onUpdate: <K extends keyof PresswallConfig>(
@@ -50,18 +65,40 @@ interface OnboardingTemplateCustomControlsProps {
 
 function ControlSection({
   children,
+  onOpenChange,
+  open,
   title,
 }: {
   children: React.ReactNode;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
   title: string;
 }) {
   return (
-    <section className="space-y-3">
-      <p className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-        {title}
-      </p>
-      {children}
-    </section>
+    <Collapsible
+      className="border-b border-b-border/60 pb-3 last:border-b-0"
+      onOpenChange={onOpenChange}
+      open={open}
+    >
+      <CollapsibleTrigger
+        className="flex w-full items-center justify-between gap-2 rounded-md py-1.5 text-left transition-colors hover:text-foreground"
+        type="button"
+      >
+        <span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+          {title}
+        </span>
+        <IconChevronDown
+          className={cn(
+            "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
+            open && "rotate-180"
+          )}
+          stroke={2}
+        />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="space-y-3 pt-3">
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -69,10 +106,20 @@ export function OnboardingTemplateCustomControls({
   config,
   onUpdate,
 }: OnboardingTemplateCustomControlsProps) {
+  const [openSections, setOpenSections] = useState(DEFAULT_OPEN_SECTIONS);
+
+  const setSectionOpen = (id: CustomSectionId, open: boolean) => {
+    setOpenSections((current) => ({ ...current, [id]: open }));
+  };
+
   return (
     <ScrollArea className="min-h-0 flex-1">
-      <div className="space-y-5 p-4">
-        <ControlSection title="Heading">
+      <div className="space-y-3 p-4">
+        <ControlSection
+          onOpenChange={(open) => setSectionOpen("heading", open)}
+          open={openSections.heading}
+          title="Heading"
+        >
           <div className="flex items-center justify-between rounded-lg border px-3 py-2.5">
             <Label className="text-sm" htmlFor="onboarding-show-heading">
               Show heading
@@ -135,9 +182,11 @@ export function OnboardingTemplateCustomControls({
           ) : null}
         </ControlSection>
 
-        <Separator />
-
-        <ControlSection title="Layout">
+        <ControlSection
+          onOpenChange={(open) => setSectionOpen("layout", open)}
+          open={openSections.layout}
+          title="Layout"
+        >
           <div className="grid gap-1.5">
             <Label className="text-sm">Layout type</Label>
             <Select
@@ -156,11 +205,30 @@ export function OnboardingTemplateCustomControls({
               </SelectContent>
             </Select>
           </div>
+
+          {config.layout === "bar" || config.layout === "grid" ? (
+            <div className="grid gap-1.5">
+              <Label className="text-sm">
+                Logos per row ({config.logosPerRow})
+              </Label>
+              <Slider
+                max={8}
+                min={2}
+                onValueChange={(value) =>
+                  onUpdate("logosPerRow", sliderValue(value))
+                }
+                step={1}
+                value={[config.logosPerRow]}
+              />
+            </div>
+          ) : null}
         </ControlSection>
 
-        <Separator />
-
-        <ControlSection title="Look">
+        <ControlSection
+          onOpenChange={(open) => setSectionOpen("look", open)}
+          open={openSections.look}
+          title="Look"
+        >
           <div className="grid gap-1.5">
             <Label className="text-sm">Color mode</Label>
             <Select
@@ -212,9 +280,11 @@ export function OnboardingTemplateCustomControls({
           />
         </ControlSection>
 
-        <Separator />
-
-        <ControlSection title="Spacing">
+        <ControlSection
+          onOpenChange={(open) => setSectionOpen("spacing", open)}
+          open={openSections.spacing}
+          title="Spacing"
+        >
           <div className="grid gap-1.5">
             <Label className="text-sm">
               Logo height ({config.logoHeight}px)

@@ -8,6 +8,7 @@ import {
 import { useState } from "react";
 import { OnboardingActions } from "@/components/presswall/onboarding-actions";
 import { OnboardingPreview } from "@/components/presswall/onboarding-preview";
+import { OnboardingPreviewCanvas } from "@/components/presswall/onboarding-preview-canvas";
 import { OnboardingTemplateCustomControls } from "@/components/presswall/onboarding-template-custom-controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,9 +31,6 @@ interface OnboardingTemplateStepProps {
 }
 
 type DeviceMode = "desktop" | "mobile";
-
-const CANVAS_DOT_PATTERN =
-  "radial-gradient(circle, color-mix(in oklab, var(--muted-foreground) 22%, transparent) 1px, transparent 1px)";
 
 function templateLayoutLabel(template: PresswallTemplate): string {
   if (template.config.layout === "marquee") {
@@ -98,7 +96,7 @@ function TemplateRow({
     <button
       aria-pressed={isSelected}
       className={cn(
-        "flex w-full items-center gap-3 rounded-lg border p-2.5 text-left transition-all",
+        "flex w-full flex-col gap-2.5 rounded-lg border p-2.5 text-left transition-all",
         isSelected
           ? "border-foreground/50 bg-muted/50 ring-1 ring-foreground/25"
           : "hover:border-foreground/20 hover:bg-muted/30"
@@ -106,18 +104,24 @@ function TemplateRow({
       onClick={() => editor.applyTemplate(template.id)}
       type="button"
     >
-      <div className="w-[108px] shrink-0">
+      <div className="relative w-full">
         <OnboardingPreview
           catalog={catalog}
-          className="pointer-events-none border-black/5 shadow-none"
+          className="pointer-events-none w-full border-black/5 shadow-none"
           config={previewConfig}
           previewTheme={getTemplatePreviewTheme(template.id)}
           scale="sm"
           selections={selections}
         />
+
+        {isSelected ? (
+          <span className="absolute top-2 right-2 inline-flex size-5 items-center justify-center rounded-full bg-foreground text-background shadow-sm">
+            <IconCircleCheck className="size-3.5" stroke={2.5} />
+          </span>
+        ) : null}
       </div>
 
-      <div className="min-w-0 flex-1 space-y-1">
+      <div className="space-y-1">
         <div className="flex items-center gap-2">
           <p className="truncate font-medium text-sm">{template.name}</p>
           <Badge className="shrink-0 text-[0.625rem]" variant="secondary">
@@ -128,12 +132,6 @@ function TemplateRow({
           {template.description}
         </p>
       </div>
-
-      {isSelected ? (
-        <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-foreground text-background">
-          <IconCircleCheck className="size-3.5" stroke={2.5} />
-        </span>
-      ) : null}
     </button>
   );
 }
@@ -156,49 +154,24 @@ export function OnboardingTemplateStep({
       </p>
 
       <div className="flex min-h-0 flex-1 gap-4">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="flex min-h-0 min-w-0 flex-[3] flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
           <div className="flex shrink-0 items-center justify-between border-b px-4 py-2.5">
             <p className="font-medium text-sm">Live preview</p>
             <DeviceToggle mode={deviceMode} onChange={setDeviceMode} />
           </div>
 
-          <div
-            className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-6"
-            style={{
-              backgroundColor:
-                "color-mix(in oklab, var(--muted) 35%, transparent)",
-              backgroundImage: CANVAS_DOT_PATTERN,
-              backgroundSize: "18px 18px",
-            }}
-          >
-            <div
-              className={cn(
-                "transition-[width,max-width] duration-200",
-                deviceMode === "desktop"
-                  ? "w-full max-w-2xl"
-                  : "w-[300px] max-w-full"
-              )}
-            >
-              <div
-                className={cn(
-                  "overflow-hidden rounded-xl bg-background shadow-sm ring-1 ring-border/60",
-                  deviceMode === "mobile" && "rounded-[1.25rem]"
-                )}
-              >
-                <OnboardingPreview
-                  catalog={editor.catalog}
-                  className="border-0 shadow-none"
-                  config={editor.config}
-                  previewTheme={previewTheme}
-                  scale="lg"
-                  selections={editor.selections}
-                />
-              </div>
-            </div>
+          <div className="min-h-0 flex-1">
+            <OnboardingPreviewCanvas
+              catalog={editor.catalog}
+              config={editor.config}
+              deviceMode={deviceMode}
+              previewTheme={previewTheme}
+              selections={editor.selections}
+            />
           </div>
         </div>
 
-        <div className="flex w-[min(100%,20rem)] shrink-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="flex min-h-0 min-w-0 flex-[2] flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
           <Tabs
             className="flex min-h-0 flex-1 flex-col"
             onValueChange={(value) =>

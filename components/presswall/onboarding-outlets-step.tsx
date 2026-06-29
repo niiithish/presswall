@@ -130,7 +130,7 @@ function OutletTile({
             type="button"
           >
             <PublisherLogo
-              className="[--logo-height:1.5rem]"
+              className="[--logo-height:1.125rem] [--logo-max-width:6.5625rem]"
               name={name}
               publisherId={publisherId}
             />
@@ -160,7 +160,7 @@ function UploadedTile({
         render={
           <div className="group relative flex h-12 items-center justify-center rounded-lg border border-foreground/50 bg-muted/60 px-2 ring-1 ring-foreground/30">
             <PublisherLogo
-              className="[--logo-height:1.5rem]"
+              className="[--logo-height:1.125rem] [--logo-max-width:6.5625rem]"
               customLogoSvg={item.customLogoSvg}
               name={name}
             />

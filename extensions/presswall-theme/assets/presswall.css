@@ -22,21 +22,38 @@
   letter-spacing: 0.28em;
 }
 
-.presswall-bar {
-  display: flex;
-  flex-wrap: wrap;
+.presswall-heading-align-left {
+  text-align: left;
+}
+
+.presswall-heading-align-center {
+  text-align: center;
+}
+
+.presswall-heading-align-right {
+  text-align: right;
+}
+
+.presswall-bar,
+.presswall-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--logos-per-row, 4), auto);
   align-items: center;
 }
 
-.presswall-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.presswall-bar.presswall-align-left,
+.presswall-grid.presswall-align-left {
+  justify-content: start;
 }
 
-@media (min-width: 640px) {
-  .presswall-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.presswall-bar.presswall-align-center,
+.presswall-grid.presswall-align-center {
+  justify-content: center;
+}
+
+.presswall-bar.presswall-align-right,
+.presswall-grid.presswall-align-right {
+  justify-content: end;
 }
 
 .presswall-grid-item {
@@ -47,14 +64,32 @@
 
 .presswall-logo {
   display: inline-flex;
-  max-width: 140px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: 12.5rem;
 }
 
 .presswall-logo svg,
 .presswall-logo-img {
   display: block;
   width: auto;
+  max-width: 12.5rem;
   height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.presswall-bar .presswall-logo,
+.presswall-grid .presswall-logo {
+  width: auto;
+  max-width: none;
+}
+
+.presswall-bar .presswall-logo-img,
+.presswall-grid .presswall-logo-img {
+  max-width: none;
 }
 
 .presswall-marquee-wrap {

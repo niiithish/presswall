@@ -39,10 +39,7 @@ export function SvgLogo({ svg, className, style }: SvgLogoProps) {
 
   return (
     <span
-      className={cn(
-        "presswall-svg-logo inline-flex h-[var(--logo-height,1.5rem)] w-auto max-w-full select-none items-center justify-center",
-        className
-      )}
+      className={cn("presswall-svg-logo select-none", className)}
       dangerouslySetInnerHTML={{ __html: html }}
       style={{ color: themeColor(resolvedTheme), ...style }}
       suppressHydrationWarning

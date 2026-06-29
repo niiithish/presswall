@@ -22,6 +22,18 @@ function buildLogoFilter(
   return filters.length > 0 ? filters.join(" ") : undefined;
 }
 
+export function getLogoSlotStyle(
+  logoHeight: number,
+  maxWidth: number,
+  logoStyle?: React.CSSProperties
+): React.CSSProperties {
+  return {
+    ...logoStyle,
+    "--logo-height": `${logoHeight}px`,
+    "--logo-max-width": `${maxWidth}px`,
+  } as React.CSSProperties;
+}
+
 export function getLogoImageStyle(
   config: PresswallConfig,
   options: LogoImageStyleOptions = {}

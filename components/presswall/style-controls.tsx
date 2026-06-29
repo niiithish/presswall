@@ -196,6 +196,21 @@ export function StyleControls({ config, onUpdate }: StyleControlsProps) {
           </Select>
         </div>
 
+        {config.layout === "bar" || config.layout === "grid" ? (
+          <div className="grid gap-2">
+            <Label>Logos per row ({config.logosPerRow})</Label>
+            <Slider
+              max={8}
+              min={2}
+              onValueChange={(value) =>
+                onUpdate("logosPerRow", sliderValue(value))
+              }
+              step={1}
+              value={[config.logosPerRow]}
+            />
+          </div>
+        ) : null}
+
         <div className="grid gap-2">
           <Label>Alignment</Label>
           <div className="grid grid-cols-3 gap-1.5">

@@ -15,6 +15,7 @@ export const presswallConfigSchema = z.object({
   colorMode: colorModeSchema,
   layout: layoutSchema,
   logoHeight: z.number().int().min(16).max(80),
+  logosPerRow: z.number().int().min(2).max(8),
   gap: z.number().int().min(8).max(64),
   alignment: alignmentSchema,
   backgroundColor: cssColorSchema,

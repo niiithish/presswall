@@ -16,6 +16,28 @@ interface PublisherLogoProps {
   style?: React.CSSProperties;
 }
 
+function LogoSlot({
+  children,
+  className,
+  style,
+  title,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  title?: string;
+}) {
+  return (
+    <span
+      className={cn("presswall-logo-slot", className)}
+      style={style}
+      title={title}
+    >
+      {children}
+    </span>
+  );
+}
+
 export function PublisherLogo({
   publisherId,
   logoImageUrl,
@@ -27,7 +49,11 @@ export function PublisherLogo({
   const [failed, setFailed] = useState(false);
 
   if (customLogoSvg) {
-    return <SvgLogo className={className} style={style} svg={customLogoSvg} />;
+    return (
+      <LogoSlot className={className} style={style} title={name}>
+        <SvgLogo svg={customLogoSvg} />
+      </LogoSlot>
+    );
   }
 
   const logoUrl =
@@ -38,32 +64,25 @@ export function PublisherLogo({
 
   if (!logoUrl || failed) {
     return (
-      <span
-        className={cn(
-          "inline-flex h-[var(--logo-height,1.5rem)] min-w-[var(--logo-height,1.5rem)] items-center justify-center rounded bg-muted font-semibold text-[0.625rem] text-muted-foreground uppercase",
-          className
-        )}
-        style={style}
-        title={name}
-      >
-        {name.slice(0, 2)}
-      </span>
+      <LogoSlot className={className} style={style} title={name}>
+        <span className="font-semibold text-[0.625rem] text-muted-foreground uppercase">
+          {name.slice(0, 2)}
+        </span>
+      </LogoSlot>
     );
   }
 
   return (
-    <Image
-      alt={`${name} logo`}
-      className={cn(
-        "h-[var(--logo-height,1.5rem)] w-auto max-w-full object-contain object-center",
-        className
-      )}
-      height={32}
-      onError={() => setFailed(true)}
-      src={logoUrl}
-      style={style}
-      unoptimized
-      width={112}
-    />
+    <LogoSlot className={className} style={style} title={name}>
+      <Image
+        alt={`${name} logo`}
+        className="presswall-logo-img"
+        height={32}
+        onError={() => setFailed(true)}
+        src={logoUrl}
+        unoptimized
+        width={140}
+      />
+    </LogoSlot>
   );
 }

@@ -10,7 +10,14 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { getLogoImageStyle } from "@/lib/presswall-logo-style";
+import {
+  getLogosRowGridClassName,
+  getLogosRowGridStyle,
+} from "@/lib/presswall-layout-style";
+import {
+  getLogoImageStyle,
+  getLogoSlotStyle,
+} from "@/lib/presswall-logo-style";
 import { getPreviewColors } from "@/lib/presswall-preview-colors";
 import type {
   PresswallConfig,
@@ -29,10 +36,10 @@ interface PreviewProps {
   variant?: "default" | "canvas";
 }
 
-const alignmentClass = {
-  left: "justify-start",
-  center: "justify-center",
-  right: "justify-end",
+const headingAlignmentClass = {
+  left: "text-left",
+  center: "text-center",
+  right: "text-right",
 } as const;
 
 function LayoutContent({
@@ -81,11 +88,14 @@ function LayoutContent({
   if (config.layout === "grid") {
     return (
       <div
-        className="grid grid-cols-2 sm:grid-cols-3"
-        style={{ gap: `${config.gap}px` }}
+        className={getLogosRowGridClassName(config.alignment)}
+        style={getLogosRowGridStyle(config.logosPerRow, config.gap)}
       >
         {items.map((item) => (
-          <div className="flex items-center justify-center" key={item.id}>
+          <div
+            className="flex min-w-0 items-center justify-center"
+            key={item.id}
+          >
             {renderLogo(item)}
           </div>
         ))}
@@ -95,13 +105,14 @@ function LayoutContent({
 
   return (
     <div
-      className={cn(
-        "flex flex-wrap items-center gap-y-4",
-        alignmentClass[config.alignment]
-      )}
-      style={{ gap: `${config.gap}px` }}
+      className={getLogosRowGridClassName(config.alignment)}
+      style={getLogosRowGridStyle(config.logosPerRow, config.gap)}
     >
-      {items.map((item) => renderLogo(item))}
+      {items.map((item) => (
+        <div className="flex min-w-0 items-center justify-center" key={item.id}>
+          {renderLogo(item)}
+        </div>
+      ))}
     </div>
   );
 }
@@ -127,26 +138,16 @@ export function PresswallPreview({
     padding: `${config.paddingY}px ${config.paddingX}px`,
   } satisfies React.CSSProperties;
 
-  const renderLogo = (item: StorefrontPublisher) => {
-    const logoContainerStyle = {
-      ...logoStyle,
-      "--logo-height": `${config.logoHeight}px`,
-      height: `${config.logoHeight}px`,
-      maxWidth: "140px",
-    } as React.CSSProperties;
-
-    return (
-      <PublisherLogo
-        className="flex shrink-0 items-center"
-        customLogoSvg={item.isCustom ? item.logoSvg || undefined : undefined}
-        key={item.id}
-        logoImageUrl={item.logoImageUrl}
-        name={item.name}
-        publisherId={item.isCustom ? undefined : item.id}
-        style={logoContainerStyle}
-      />
-    );
-  };
+  const renderLogo = (item: StorefrontPublisher) => (
+    <PublisherLogo
+      customLogoSvg={item.isCustom ? item.logoSvg || undefined : undefined}
+      key={item.id}
+      logoImageUrl={item.logoImageUrl}
+      name={item.name}
+      publisherId={item.isCustom ? undefined : item.id}
+      style={getLogoSlotStyle(config.logoHeight, 200, logoStyle)}
+    />
+  );
 
   const themeToggle = (
     <div className="flex gap-1 rounded-lg border bg-background/90 p-0.5 shadow-sm backdrop-blur">
@@ -178,7 +179,10 @@ export function PresswallPreview({
     >
       {config.showHeading && config.headingText ? (
         <p
-          className="mb-4 font-medium text-[11px] uppercase tracking-[0.28em]"
+          className={cn(
+            "mb-4 font-medium text-[11px] uppercase tracking-[0.28em]",
+            headingAlignmentClass[config.alignment]
+          )}
           style={{ color: previewColors.textColor }}
         >
           {config.headingText}

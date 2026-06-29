@@ -1,0 +1,1 @@
+ALTER TABLE `shop_configs` ADD `logos_per_row` integer DEFAULT 4 NOT NULL;

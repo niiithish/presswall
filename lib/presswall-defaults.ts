@@ -6,6 +6,7 @@ export const DEFAULT_PRESSWALL_CONFIG: PresswallConfig = {
   colorMode: "mono",
   layout: "bar",
   logoHeight: 32,
+  logosPerRow: 4,
   gap: 24,
   alignment: "center",
   backgroundColor: "transparent",

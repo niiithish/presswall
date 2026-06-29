@@ -12,6 +12,9 @@ if [[ -z "$SRC_DIR" || ! -d "$SRC_DIR" ]]; then
   exit 1
 fi
 
+INK_HEIGHT="${INK_HEIGHT:-120}"
+TRIM_FUZZ="${TRIM_FUZZ:-2%}"
+
 process_logo() {
   local src="$1"
   local dest="$2"
@@ -20,6 +23,9 @@ process_logo() {
     \( +clone -alpha extract -threshold 30% -write mpr:alpha +delete \) \
     -alpha off -fill black -colorize 100 \
     mpr:alpha -compose CopyOpacity -composite \
+    -alpha on -bordercolor none -border 1 \
+    -fuzz "$TRIM_FUZZ" -trim +repage \
+    -resize "x${INK_HEIGHT}" \
     PNG32:"$dest"
 
   echo "Wrote $(basename "$dest") ($(magick identify -format 'alpha=%A %wx%h' "$dest"))"

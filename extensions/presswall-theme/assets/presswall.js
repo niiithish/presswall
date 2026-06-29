@@ -51,6 +51,7 @@ const INLINE_RGB_COLOR_PATTERN =
     const paddingY = sanitizeCssSize(config.paddingY, 16);
     const paddingX = sanitizeCssSize(config.paddingX, 16);
     const gap = sanitizeCssSize(config.gap, 24);
+    const logosPerRow = clampLogosPerRow(config.logosPerRow);
     const marqueeSpeed = sanitizeCssSize(config.marqueeSpeed, 30);
     const alignment = sanitizeAlignment(config.alignment);
 
@@ -76,7 +77,7 @@ const INLINE_RGB_COLOR_PATTERN =
     }
 
     if (config.layout === "grid") {
-      return `<div class="presswall-shell" style="${style}">${heading}<div class="presswall-grid" style="gap:${gap}px">${config.publishers
+      return `<div class="presswall-shell" style="${style}">${heading}<div class="presswall-grid presswall-align-${alignment}" style="gap:${gap}px;--logos-per-row:${logosPerRow}">${config.publishers
         .map(
           (publisher) =>
             `<div class="presswall-grid-item">${renderLogo(publisher, config, logoStyle)}</div>`
@@ -84,7 +85,7 @@ const INLINE_RGB_COLOR_PATTERN =
         .join("")}</div></div>`;
     }
 
-    return `<div class="presswall-shell" style="${style}">${heading}<div class="presswall-bar presswall-align-${alignment}" style="gap:${gap}px">${logos}</div></div>`;
+    return `<div class="presswall-shell" style="${style}">${heading}<div class="presswall-bar presswall-align-${alignment}" style="gap:${gap}px;--logos-per-row:${logosPerRow}">${logos}</div></div>`;
   }
 
   function renderLogo(publisher, config, logoStyle) {
@@ -242,6 +243,15 @@ const INLINE_RGB_COLOR_PATTERN =
     }
 
     return Math.max(0, Math.round(parsed));
+  }
+
+  function clampLogosPerRow(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) {
+      return 4;
+    }
+
+    return Math.min(8, Math.max(2, Math.round(parsed)));
   }
 
   function sanitizeUrl(url) {

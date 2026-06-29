@@ -111,6 +111,7 @@ export const PRESSWALL_TEMPLATES: PresswallTemplate[] = [
       paddingY: 20,
       paddingX: 16,
       logoHeight: 32,
+      logosPerRow: 3,
       gap: 20,
       grayscaleOpacity: 70,
     },

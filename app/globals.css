@@ -84,11 +84,50 @@
     linear-gradient(-45deg, transparent 75%, oklch(0.22 0 0) 75%);
 }
 
+.presswall-logo-slot {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: var(--logo-max-width, 8.75rem);
+  height: var(--logo-height, 1.5rem);
+}
+
+.presswall-logo-row .presswall-logo-slot {
+  width: auto;
+  max-width: none;
+}
+
+.presswall-logo-slot > img,
+.presswall-logo-slot .presswall-logo-img {
+  display: block;
+  width: auto;
+  max-width: var(--logo-max-width, 8.75rem);
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.presswall-logo-row .presswall-logo-slot > img,
+.presswall-logo-row .presswall-logo-slot .presswall-logo-img {
+  max-width: none;
+}
+
+.presswall-svg-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
 .presswall-svg-logo > svg {
   display: block;
   width: auto;
   max-width: 100%;
-  height: 100%;
+  height: auto;
+  max-height: 100%;
 }
 
 :root {
