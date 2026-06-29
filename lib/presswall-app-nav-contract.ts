@@ -1,7 +1,8 @@
 /**
  * Shopify App Home discovers `<s-app-nav>` automatically when App Bridge loads
  * (see shopify.dev/docs/api/app-home/app-bridge-web-components/app-nav).
- * No createApp registration is required for sidebar items.
+ * Use native `<a>` children with static app-relative hrefs for Next.js apps.
+ * App Bridge preserves embedded context on navigation; avoid window.search in hrefs.
  */
 export interface PresswallNavPaths {
   editor: string;
@@ -41,14 +42,14 @@ export function assertPresswallAppNavContract(
     throw new Error("Expected <s-app-nav> inside nav host");
   }
 
-  const links = [...host.querySelectorAll("s-link")];
+  const links = [...host.querySelectorAll("s-app-nav a[href]")];
   if (links.length < 2) {
     throw new Error("Expected at least Home + Editor links");
   }
 
   const homeLinks = links.filter((link) => link.getAttribute("rel") === "home");
   if (homeLinks.length !== 1) {
-    throw new Error('Expected exactly one <s-link rel="home">');
+    throw new Error('Expected exactly one <a rel="home">');
   }
 
   const homeLink = homeLinks[0];

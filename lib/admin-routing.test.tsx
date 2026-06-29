@@ -11,12 +11,13 @@ function readSource(relativePath: string) {
 }
 
 describe("embedded app bridge setup", () => {
-  test("root layout loads unified app bridge script and api key metadata", () => {
+  test("root layout loads app bridge in head and mounts persistent sidebar nav", () => {
     const layout = readSource("app/layout.tsx");
 
     expect(layout).toContain("cdn.shopify.com/shopifycloud/app-bridge.js");
-    expect(layout).toContain("beforeInteractive");
-    expect(layout).toContain("shopify-api-key");
+    expect(layout).toContain('name="shopify-api-key"');
+    expect(layout).toContain("<head>");
+    expect(layout).toContain("PresswallAppNav");
   });
 });
 
@@ -48,5 +49,17 @@ describe("editor sub-page", () => {
     expect(editorView).toContain("usePresswallEditor");
     expect(editorPage).toContain("hasEmbeddedEntryParams");
     expect(editorPage).toContain("EditorView");
+  });
+});
+
+describe("sidebar nav ownership", () => {
+  test("page views do not mount duplicate App Bridge nav hosts", () => {
+    const adminDashboard = readSource(
+      "components/presswall/admin-dashboard.tsx"
+    );
+    const editorView = readSource("components/presswall/editor-view.tsx");
+
+    expect(adminDashboard).not.toContain("PresswallAppNav");
+    expect(editorView).not.toContain("PresswallAppNav");
   });
 });

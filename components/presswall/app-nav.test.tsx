@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { cleanup, render, waitFor } from "@testing-library/react";
+import { cleanup, render } from "@testing-library/react";
 import { assertPresswallAppNavContract } from "@/lib/presswall-app-nav-contract";
 import { PresswallAppNav } from "./app-nav";
 
@@ -25,19 +25,14 @@ describe("PresswallAppNav", () => {
     cleanup();
   });
 
-  test("renders App Bridge nav contract Shopify admin discovers automatically", async () => {
+  test("renders App Bridge nav contract Shopify admin discovers automatically", () => {
     mountGlobalStyles();
-
-    window.location.href =
-      "http://localhost:3000/?shop=test.myshopify.com&host=abc&id_token=secret";
 
     const view = render(<PresswallAppNav />);
 
-    await waitFor(() => {
-      assertPresswallAppNavContract(view.container, {
-        home: "/?shop=test.myshopify.com&host=abc",
-        editor: "/editor?shop=test.myshopify.com&host=abc",
-      });
+    assertPresswallAppNavContract(view.container, {
+      home: "/",
+      editor: "/editor",
     });
 
     const host = view.container.querySelector(

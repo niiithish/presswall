@@ -313,7 +313,7 @@
 /* App Bridge nav is consumed by Shopify admin — never visible inside the iframe */
 .presswall-app-nav-host,
 .presswall-app-nav-host s-app-nav,
-.presswall-app-nav-host s-link {
+.presswall-app-nav-host a {
   position: absolute !important;
   display: none !important;
   inline-size: 0 !important;

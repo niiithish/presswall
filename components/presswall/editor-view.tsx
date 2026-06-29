@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { PresswallAppNav } from "@/components/presswall/app-nav";
 import { EditorWorkspace } from "@/components/presswall/editor-workspace";
 import { OnboardingShellSkeleton } from "@/components/presswall/onboarding-shell-skeleton";
 import { ThemeActivationBanner } from "@/components/presswall/theme-activation-banner";
@@ -55,28 +54,25 @@ export function EditorView() {
   }
 
   return (
-    <>
-      <PresswallAppNav />
-      <div className="flex h-svh flex-col overflow-hidden bg-background">
-        <ThemeActivationBanner variant="compact" />
+    <div className="flex h-svh flex-col overflow-hidden bg-background">
+      <ThemeActivationBanner variant="compact" />
 
-        {editor.unavailableCount > 0 ? (
-          <Alert className="shrink-0 rounded-none border-x-0 border-t-0 py-2">
-            <AlertTitle className="text-sm">
-              Some outlets are no longer available
-            </AlertTitle>
-            <AlertDescription className="text-xs">
-              {editor.unavailableCount} previously selected outlet
-              {editor.unavailableCount === 1 ? "" : "s"} will not show on your
-              storefront. Remove them or save to update.
-            </AlertDescription>
-          </Alert>
-        ) : null}
+      {editor.unavailableCount > 0 ? (
+        <Alert className="shrink-0 rounded-none border-x-0 border-t-0 py-2">
+          <AlertTitle className="text-sm">
+            Some outlets are no longer available
+          </AlertTitle>
+          <AlertDescription className="text-xs">
+            {editor.unavailableCount} previously selected outlet
+            {editor.unavailableCount === 1 ? "" : "s"} will not show on your
+            storefront. Remove them or save to update.
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pt-4 pb-6 sm:px-6">
-          <EditorWorkspace editor={editor} />
-        </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pt-4 pb-6 sm:px-6">
+        <EditorWorkspace editor={editor} />
       </div>
-    </>
+    </div>
   );
 }

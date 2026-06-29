@@ -7,8 +7,8 @@ import {
 describe("presswall app nav contract", () => {
   test("declares Home override plus Editor sub-page per Shopify app-nav docs", () => {
     const paths = {
-      home: "/?shop=test.myshopify.com",
-      editor: "/editor?shop=test.myshopify.com",
+      home: "/",
+      editor: "/editor",
     };
 
     expect(getPresswallAppNavLinks(paths)).toEqual([
@@ -22,8 +22,8 @@ describe("presswall app nav contract", () => {
     document.body.innerHTML = `
       <div aria-hidden="true" class="presswall-app-nav-host">
         <s-app-nav>
-          <s-link href="/?shop=test.myshopify.com" rel="home">Home</s-link>
-          <s-link href="/editor?shop=test.myshopify.com">Editor</s-link>
+          <a href="/" rel="home">Home</a>
+          <a href="/editor">Editor</a>
         </s-app-nav>
       </div>
     `;
@@ -31,8 +31,8 @@ describe("presswall app nav contract", () => {
     try {
       expect(() =>
         assertPresswallAppNavContract(document.body, {
-          home: "/?shop=test.myshopify.com",
-          editor: "/editor?shop=test.myshopify.com",
+          home: "/",
+          editor: "/editor",
         })
       ).not.toThrow();
     } finally {

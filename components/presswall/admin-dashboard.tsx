@@ -1,6 +1,5 @@
 "use client";
 
-import { PresswallAppNav } from "@/components/presswall/app-nav";
 import { MerchantOverview } from "@/components/presswall/merchant-overview";
 import { OnboardingAdminView } from "@/components/presswall/onboarding-admin-view";
 import { OnboardingShellSkeleton } from "@/components/presswall/onboarding-shell-skeleton";
@@ -53,14 +52,11 @@ export function AdminDashboardView({ editor }: { editor: PresswallEditor }) {
   }
 
   return (
-    <>
-      <PresswallAppNav />
-      <ThemeActivationProvider>
-        <div className="flex h-svh flex-col overflow-hidden bg-background">
-          <MerchantOverview data={merchantOverviewFromEditor(editor)} />
-        </div>
-      </ThemeActivationProvider>
-    </>
+    <ThemeActivationProvider>
+      <div className="flex h-svh flex-col overflow-hidden bg-background">
+        <MerchantOverview data={merchantOverviewFromEditor(editor)} />
+      </div>
+    </ThemeActivationProvider>
   );
 }
 

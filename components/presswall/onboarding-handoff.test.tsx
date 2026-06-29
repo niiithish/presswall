@@ -141,9 +141,6 @@ describe("onboarding completion handoff", () => {
       ).toBe("1");
       expect(view.queryByText("Step 1 of 3 — Add your press logos")).toBeNull();
       expect(view.queryByText("Discard")).toBeNull();
-      expect(
-        view.container.querySelector(".presswall-app-nav-host")
-      ).toBeTruthy();
     });
   });
 });

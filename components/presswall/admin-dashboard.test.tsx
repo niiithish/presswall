@@ -9,7 +9,7 @@ describe("AdminDashboard render routing", () => {
     cleanup();
   });
 
-  test("renders merchant overview and sidebar nav after onboarding", () => {
+  test("renders merchant overview after onboarding", () => {
     const view = render(
       <AdminDashboardView
         editor={createPresswallEditorFixture({ needsOnboarding: false })}
@@ -18,9 +18,6 @@ describe("AdminDashboard render routing", () => {
 
     expect(view.getByText("Quick actions")).toBeTruthy();
     expect(view.getByText("Storefront preview")).toBeTruthy();
-    expect(
-      view.container.querySelector(".presswall-app-nav-host")
-    ).toBeTruthy();
     expect(view.queryByText("Discard")).toBeNull();
   });
 
@@ -33,7 +30,6 @@ describe("AdminDashboard render routing", () => {
 
     expect(view.getByText("Step 1 of 3 — Add your press logos")).toBeTruthy();
     expect(view.queryByText("Quick actions")).toBeNull();
-    expect(view.container.querySelector(".presswall-app-nav-host")).toBeNull();
   });
 
   test("renders loading skeleton while editor is loading", () => {

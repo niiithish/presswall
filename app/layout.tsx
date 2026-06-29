@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 
 import "./globals.css";
+import { PresswallAppNav } from "@/components/presswall/app-nav";
 import { SessionBootstrap } from "@/components/session-bootstrap";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -24,9 +24,6 @@ export async function generateMetadata(): Promise<Metadata> {
       icon: "/brand/black-back.png",
       apple: "/brand/black-back.png",
     },
-    other: {
-      "shopify-api-key": process.env.SHOPIFY_API_KEY ?? "",
-    },
   };
 }
 
@@ -46,11 +43,18 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
     >
-      <body>
-        <Script
-          src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
-          strategy="beforeInteractive"
+      <head>
+        <meta
+          content={process.env.SHOPIFY_API_KEY ?? ""}
+          name="shopify-api-key"
         />
+        <script
+          async={false}
+          src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
+        />
+      </head>
+      <body>
+        <PresswallAppNav />
         <SessionBootstrap />
         <ThemeProvider>
           <TooltipProvider>
