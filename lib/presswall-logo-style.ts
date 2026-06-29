@@ -1,17 +1,42 @@
+import { shouldInvertLogos } from "@/lib/presswall-logo-contrast";
 import type { PresswallConfig } from "@/lib/presswall-types";
 
+interface LogoImageStyleOptions {
+  previewIsDark?: boolean;
+}
+
+function buildLogoFilter(
+  config: PresswallConfig,
+  options: LogoImageStyleOptions = {}
+): string | undefined {
+  const filters: string[] = [];
+
+  if (config.colorMode === "muted" || config.colorMode === "mono") {
+    filters.push("grayscale(100%)");
+  }
+
+  if (shouldInvertLogos(config, options)) {
+    filters.push("invert(1)");
+  }
+
+  return filters.length > 0 ? filters.join(" ") : undefined;
+}
+
 export function getLogoImageStyle(
-  config: PresswallConfig
+  config: PresswallConfig,
+  options: LogoImageStyleOptions = {}
 ): React.CSSProperties | undefined {
+  const filter = buildLogoFilter(config, options);
+
   if (config.colorMode === "muted") {
     return {
-      filter: "grayscale(100%)",
+      ...(filter ? { filter } : {}),
       opacity: config.grayscaleOpacity / 100,
     };
   }
 
   if (config.colorMode === "mono") {
-    return { filter: "grayscale(100%)" };
+    return filter ? { filter } : undefined;
   }
 
   return;

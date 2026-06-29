@@ -1,8 +1,13 @@
 .presswall-root {
   width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
 }
 
 .presswall-loading {
+  font-family: inherit;
   font-size: 0.875rem;
   color: rgba(0, 0, 0, 0.55);
   text-align: center;
@@ -10,8 +15,9 @@
 
 .presswall-heading {
   margin: 0 0 1rem;
+  font-family: var(--font-heading-family, inherit);
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: inherit;
   text-transform: uppercase;
   letter-spacing: 0.28em;
 }

@@ -44,7 +44,6 @@ import { cn } from "@/lib/utils";
 interface OnboardingOutletsStepProps {
   editor: PresswallEditor;
   onNext: () => void;
-  onSkip: () => void;
 }
 
 function PositionBadge({ position }: { position: number }) {
@@ -242,7 +241,6 @@ function OutletGrid({
 export function OnboardingOutletsStep({
   editor,
   onNext,
-  onSkip,
 }: OnboardingOutletsStepProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -276,7 +274,7 @@ export function OnboardingOutletsStep({
 
   return (
     <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4">
-      <p className="shrink-0 text-right text-muted-foreground text-xs">
+      <p className="shrink-0 text-muted-foreground text-xs">
         Step 1 of 3 — Add your press logos
       </p>
 
@@ -391,8 +389,6 @@ export function OnboardingOutletsStep({
         nextDisabled={!canContinue}
         nextLabel="Next"
         onNext={onNext}
-        onSkip={onSkip}
-        skipLoading={editor.isSaving}
       />
     </div>
   );

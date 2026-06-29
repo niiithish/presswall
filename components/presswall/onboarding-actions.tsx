@@ -13,21 +13,17 @@ interface OnboardingActionsProps {
   nextLoading?: boolean;
   onBack?: () => void;
   onNext: () => void;
-  onSkip?: () => void;
   showBack?: boolean;
-  skipLoading?: boolean;
 }
 
 export function OnboardingActions({
   onBack,
   onNext,
-  onSkip,
   showBack = false,
   backLabel = "Back",
   nextLabel = "Next",
   nextDisabled = false,
   nextLoading = false,
-  skipLoading = false,
   compact = false,
   className,
 }: OnboardingActionsProps) {
@@ -42,24 +38,14 @@ export function OnboardingActions({
         className
       )}
     >
-      <div className="flex items-center gap-1">
-        {onSkip ? (
-          <Button
-            disabled={skipLoading}
-            onClick={onSkip}
-            size={buttonSize}
-            variant="ghost"
-          >
-            Skip
-          </Button>
-        ) : null}
-        {showBack && onBack ? (
-          <Button onClick={onBack} size={buttonSize} variant="ghost">
-            <IconArrowLeft stroke={2} />
-            {backLabel}
-          </Button>
-        ) : null}
-      </div>
+      {showBack && onBack ? (
+        <Button onClick={onBack} size={buttonSize} variant="ghost">
+          <IconArrowLeft stroke={2} />
+          {backLabel}
+        </Button>
+      ) : (
+        <span aria-hidden />
+      )}
 
       <Button
         className={nextClassName}

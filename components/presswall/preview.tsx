@@ -11,10 +11,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { getLogoImageStyle } from "@/lib/presswall-logo-style";
-import {
-  getPreviewColors,
-  shouldInvertLogosForPreview,
-} from "@/lib/presswall-preview-colors";
+import { getPreviewColors } from "@/lib/presswall-preview-colors";
 import type {
   PresswallConfig,
   PublisherCatalogItem,
@@ -120,8 +117,7 @@ export function PresswallPreview({
   const items = resolveStorefrontPublishers(config, catalog, selections);
   const isDark = theme === "dark";
   const previewColors = getPreviewColors(config, isDark);
-  const invertLogos = shouldInvertLogosForPreview(config, isDark);
-  const logoStyle = getLogoImageStyle(config);
+  const logoStyle = getLogoImageStyle(config, { previewIsDark: isDark });
   const isCanvas = variant === "canvas";
 
   const containerStyle = {
@@ -132,16 +128,8 @@ export function PresswallPreview({
   } satisfies React.CSSProperties;
 
   const renderLogo = (item: StorefrontPublisher) => {
-    const logoFilters = [
-      logoStyle?.filter,
-      invertLogos ? "invert(1)" : undefined,
-    ]
-      .filter(Boolean)
-      .join(" ");
-
     const logoContainerStyle = {
       ...logoStyle,
-      ...(logoFilters ? { filter: logoFilters } : {}),
       "--logo-height": `${config.logoHeight}px`,
       height: `${config.logoHeight}px`,
       maxWidth: "140px",

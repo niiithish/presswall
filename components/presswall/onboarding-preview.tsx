@@ -2,10 +2,7 @@
 
 import { PublisherLogo } from "@/components/presswall/publisher-logo";
 import { getLogoImageStyle } from "@/lib/presswall-logo-style";
-import {
-  getPreviewColors,
-  shouldInvertLogosForPreview,
-} from "@/lib/presswall-preview-colors";
+import { getPreviewColors } from "@/lib/presswall-preview-colors";
 import type {
   PresswallConfig,
   PublisherCatalogItem,
@@ -107,23 +104,14 @@ export function OnboardingPreview({
   const items = resolveStorefrontPublishers(config, catalog, selections);
   const isDark = previewTheme === "dark";
   const previewColors = getPreviewColors(config, isDark);
-  const invertLogos = shouldInvertLogosForPreview(config, isDark);
-  const logoStyle = getLogoImageStyle(config);
+  const logoStyle = getLogoImageStyle(config, { previewIsDark: isDark });
 
   const logoHeight =
     scale === "sm" ? Math.min(config.logoHeight, 20) : config.logoHeight;
 
   const renderLogo = (item: StorefrontPublisher) => {
-    const logoFilters = [
-      logoStyle?.filter,
-      invertLogos ? "invert(1)" : undefined,
-    ]
-      .filter(Boolean)
-      .join(" ");
-
     const logoContainerStyle = {
       ...logoStyle,
-      ...(logoFilters ? { filter: logoFilters } : {}),
       "--logo-height": `${logoHeight}px`,
       height: `${logoHeight}px`,
       maxWidth: scale === "sm" ? "72px" : "120px",

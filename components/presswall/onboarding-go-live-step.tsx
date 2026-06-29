@@ -9,7 +9,7 @@ import type { PresswallEditor } from "@/hooks/use-presswall-editor";
 import { adminFetch } from "@/lib/admin-fetch";
 import {
   getPresswallTemplate,
-  type PresswallTemplateId,
+  getTemplatePreviewTheme,
 } from "@/lib/presswall-templates";
 import type { ThemeActivationStatus } from "@/lib/theme-activation";
 
@@ -17,20 +17,12 @@ interface OnboardingGoLiveStepProps {
   editor: PresswallEditor;
   onBack: () => void;
   onComplete: () => void;
-  onSkip: () => void;
-}
-
-function templatePreviewTheme(
-  templateId: PresswallTemplateId
-): "light" | "dark" {
-  return templateId === "dark" ? "dark" : "light";
 }
 
 export function OnboardingGoLiveStep({
   editor,
   onBack,
   onComplete,
-  onSkip,
 }: OnboardingGoLiveStepProps) {
   const [status, setStatus] = useState<ThemeActivationStatus | null>(null);
   const [isChecking, setIsChecking] = useState(true);
@@ -91,7 +83,7 @@ export function OnboardingGoLiveStep({
 
   return (
     <div className="mx-auto flex h-full w-full max-w-lg flex-col gap-6">
-      <p className="shrink-0 text-right text-muted-foreground text-xs">
+      <p className="shrink-0 text-muted-foreground text-xs">
         Step 3 of 3 — Go live on your store
       </p>
 
@@ -99,7 +91,7 @@ export function OnboardingGoLiveStep({
         <OnboardingPreview
           catalog={editor.catalog}
           config={editor.config}
-          previewTheme={templatePreviewTheme(editor.selectedTemplateId)}
+          previewTheme={getTemplatePreviewTheme(editor.selectedTemplateId)}
           scale="lg"
           selections={editor.selections}
         />
@@ -164,9 +156,7 @@ export function OnboardingGoLiveStep({
         onNext={() => {
           handleFinish().catch(() => undefined);
         }}
-        onSkip={onSkip}
         showBack
-        skipLoading={editor.isSaving}
       />
     </div>
   );

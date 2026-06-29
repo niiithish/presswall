@@ -28,13 +28,11 @@ export function getPreviewColors(
   };
 }
 
+import { shouldInvertLogos } from "@/lib/presswall-logo-contrast";
+
 export function shouldInvertLogosForPreview(
   config: PresswallConfig,
   isDark: boolean
 ): boolean {
-  return (
-    isDark &&
-    isTransparentBackground(config.backgroundColor) &&
-    config.colorMode === "mono"
-  );
+  return shouldInvertLogos(config, { previewIsDark: isDark });
 }

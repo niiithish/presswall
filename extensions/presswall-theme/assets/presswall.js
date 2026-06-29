@@ -6,6 +6,9 @@
   const FOREIGN_OBJECT_TAG = /<foreignObject[\s\S]*?<\/foreignObject>/gi;
   const EVENT_HANDLER_ATTR = /\s(on\w+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
   const JAVASCRIPT_URI = /javascript:/gi;
+  const INLINE_HEX_COLOR_PATTERN = /^[0-9a-f]{3}([0-9a-f]{3})?$/i;
+  const INLINE_RGB_COLOR_PATTERN =
+    /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i;
 
   const roots = document.querySelectorAll("[data-presswall-root]");
   if (!roots.length) {
@@ -110,16 +113,98 @@
   }
 
   function getLogoStyle(config) {
-    if (config.colorMode === "muted") {
-      const opacity = sanitizeCssSize(config.grayscaleOpacity, 70) / 100;
-      return `filter:grayscale(100%);opacity:${opacity}`;
+    const filters = [];
+
+    if (config.colorMode === "muted" || config.colorMode === "mono") {
+      filters.push("grayscale(100%)");
     }
 
-    if (config.colorMode === "mono") {
-      return "filter:grayscale(100%)";
+    if (shouldInvertLogos(config)) {
+      filters.push("invert(1)");
+    }
+
+    if (config.colorMode === "muted") {
+      const opacity = sanitizeCssSize(config.grayscaleOpacity, 70) / 100;
+      const filter = filters.length ? `filter:${filters.join(" ")};` : "";
+      return `${filter}opacity:${opacity}`;
+    }
+
+    if (filters.length) {
+      return `filter:${filters.join(" ")}`;
     }
 
     return "";
+  }
+
+  function shouldInvertLogos(config) {
+    if (config.colorMode === "color") {
+      return false;
+    }
+
+    const backgroundColor = String(config.backgroundColor ?? "")
+      .trim()
+      .toLowerCase();
+
+    if (backgroundColor === "transparent") {
+      return false;
+    }
+
+    return isDarkBackgroundColor(backgroundColor);
+  }
+
+  function isDarkBackgroundColor(color) {
+    const rgb = parseCssColor(color);
+    if (!rgb) {
+      return false;
+    }
+
+    return relativeLuminance(rgb[0], rgb[1], rgb[2]) < 0.4;
+  }
+
+  function parseCssColor(color) {
+    if (color.startsWith("#")) {
+      const hex = color.slice(1);
+      if (!INLINE_HEX_COLOR_PATTERN.test(hex)) {
+        return null;
+      }
+
+      const normalized =
+        hex.length === 3
+          ? hex
+              .split("")
+              .map((char) => char + char)
+              .join("")
+          : hex;
+
+      return [
+        Number.parseInt(normalized.slice(0, 2), 16),
+        Number.parseInt(normalized.slice(2, 4), 16),
+        Number.parseInt(normalized.slice(4, 6), 16),
+      ];
+    }
+
+    const match = color.match(INLINE_RGB_COLOR_PATTERN);
+
+    if (!match) {
+      return null;
+    }
+
+    return [Number(match[1]), Number(match[2]), Number(match[3])];
+  }
+
+  function relativeLuminance(red, green, blue) {
+    const toLinear = (channel) => {
+      const normalized = channel / 255;
+      return normalized <= 0.039_28
+        ? normalized / 12.92
+        : ((normalized + 0.055) / 1.055) ** 2.4;
+    };
+
+    const linearRed = toLinear(red);
+    const linearGreen = toLinear(green);
+    const linearBlue = toLinear(blue);
+
+    return 0.2126 * linearRed + 0.7152 * linearGreen + 0.0722 * linearBlue;
   }
 
   function sanitizeAlignment(value) {

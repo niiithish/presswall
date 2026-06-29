@@ -13,10 +13,6 @@ interface OnboardingFlowProps {
 export function OnboardingFlow({ editor }: OnboardingFlowProps) {
   const [step, setStep] = useState(0);
 
-  const handleSkip = () => {
-    editor.completeOnboarding().catch(() => undefined);
-  };
-
   return (
     <div className="flex h-svh flex-col overflow-hidden bg-background">
       <div className="flex min-h-0 flex-1 flex-col items-center overflow-hidden px-6 pt-4">
@@ -25,11 +21,7 @@ export function OnboardingFlow({ editor }: OnboardingFlowProps) {
           key={step}
         >
           {step === 0 ? (
-            <OnboardingOutletsStep
-              editor={editor}
-              onNext={() => setStep(1)}
-              onSkip={handleSkip}
-            />
+            <OnboardingOutletsStep editor={editor} onNext={() => setStep(1)} />
           ) : null}
 
           {step === 1 ? (
@@ -37,7 +29,6 @@ export function OnboardingFlow({ editor }: OnboardingFlowProps) {
               editor={editor}
               onBack={() => setStep(0)}
               onNext={() => setStep(2)}
-              onSkip={handleSkip}
             />
           ) : null}
 
@@ -46,7 +37,6 @@ export function OnboardingFlow({ editor }: OnboardingFlowProps) {
               editor={editor}
               onBack={() => setStep(1)}
               onComplete={() => editor.setNeedsOnboarding(false)}
-              onSkip={handleSkip}
             />
           ) : null}
         </div>

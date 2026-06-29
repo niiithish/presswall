@@ -20,7 +20,7 @@ export const PRESSWALL_TEMPLATES: PresswallTemplate[] = [
   {
     id: "classic",
     name: "Classic",
-    description: "Centered bar with heading",
+    description: "Simple centered strip with a heading above your logos.",
     config: {
       headingText: "As seen on",
       showHeading: true,
@@ -39,7 +39,7 @@ export const PRESSWALL_TEMPLATES: PresswallTemplate[] = [
   {
     id: "dark",
     name: "Dark",
-    description: "Dark strip with light text",
+    description: "High-contrast dark band that stands out on light pages.",
     config: {
       headingText: "As seen on",
       showHeading: true,
@@ -58,7 +58,7 @@ export const PRESSWALL_TEMPLATES: PresswallTemplate[] = [
   {
     id: "marquee",
     name: "Scrolling",
-    description: "Auto-scrolling logo strip",
+    description: "Smooth auto-scroll when you have lots of outlets to show.",
     config: {
       showHeading: false,
       colorMode: "mono",
@@ -77,7 +77,7 @@ export const PRESSWALL_TEMPLATES: PresswallTemplate[] = [
   {
     id: "grid",
     name: "Grid",
-    description: "Muted logos in a grid",
+    description: "Even grid layout with soft grayscale logos.",
     config: {
       headingText: "As seen on",
       showHeading: true,
@@ -97,7 +97,7 @@ export const PRESSWALL_TEMPLATES: PresswallTemplate[] = [
   {
     id: "color",
     name: "Color",
-    description: "Full-color brand logos",
+    description: "Full-color brand marks with no grayscale filter.",
     config: {
       headingText: "As seen on",
       showHeading: true,
@@ -116,7 +116,7 @@ export const PRESSWALL_TEMPLATES: PresswallTemplate[] = [
   {
     id: "soft-card",
     name: "Soft card",
-    description: "Rounded card with muted logos",
+    description: "Rounded card on a soft background with muted logos.",
     config: {
       headingText: "Featured in",
       showHeading: true,
@@ -136,6 +136,12 @@ export const PRESSWALL_TEMPLATES: PresswallTemplate[] = [
 ];
 
 export const DEFAULT_PRESSWALL_TEMPLATE_ID: PresswallTemplateId = "classic";
+
+export function getTemplatePreviewTheme(
+  templateId: PresswallTemplateId
+): "light" | "dark" {
+  return templateId === "dark" ? "dark" : "light";
+}
 
 export function getPresswallTemplate(
   id: PresswallTemplateId
