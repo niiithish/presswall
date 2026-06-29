@@ -156,7 +156,7 @@ export function OnboardingGoLiveStep({
 
       <OnboardingActions
         center={dots}
-        className="shrink-0 border-t pt-4"
+        className="shrink-0 border-t pt-4 pb-6"
         compact
         nextDisabled={!(isActive || acknowledged) || isChecking}
         nextLabel="Open editor"

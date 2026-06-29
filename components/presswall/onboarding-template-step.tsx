@@ -77,7 +77,7 @@ export function OnboardingTemplateStep({
 
       <OnboardingActions
         center={dots}
-        className="shrink-0 border-t pt-4"
+        className="shrink-0 border-t pt-4 pb-6"
         compact
         nextLabel="Next"
         onBack={onBack}

@@ -197,9 +197,14 @@ export function OnboardingOutletsStep({
 
       <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto md:grid-cols-[1.7fr_1fr]">
         <div className="flex min-h-0 flex-col rounded-xl border bg-card p-4 shadow-sm">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <p className="font-medium text-sm">Library</p>
-            <div className="flex flex-col items-end gap-0.5">
+          <div className="mb-3 flex items-start justify-between gap-2">
+            <div>
+              <p className="font-medium text-sm">Library</p>
+              <p className="text-muted-foreground text-xs">
+                Browse outlets and tap logos to add them to your press strip.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-0.5">
               <Badge className="tabular-nums" variant="secondary">
                 {editor.selected.length} selected
               </Badge>
@@ -323,7 +328,7 @@ export function OnboardingOutletsStep({
 
       <OnboardingActions
         center={dots}
-        className="shrink-0 border-t pt-4"
+        className="shrink-0 border-t pt-4 pb-6"
         compact
         nextDisabled={!canContinue}
         nextLabel="Next"
