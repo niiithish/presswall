@@ -5,13 +5,14 @@ export function createPresswallEditorFixture(
   overrides: Partial<PresswallEditor> = {}
 ): PresswallEditor {
   return {
-    addCustomPublisher: () => undefined,
     applyTemplate: () => undefined,
     catalog: [],
     catalogById: new Map(),
     category: "All",
     completeOnboarding: async () => true,
     config: DEFAULT_PRESSWALL_CONFIG,
+    customLogos: [],
+    deleteCustomLogo: async () => undefined,
     discard: () => undefined,
     isDirty: false,
     isLoading: false,
@@ -20,7 +21,6 @@ export function createPresswallEditorFixture(
     matchedTemplateId: "classic",
     needsOnboarding: true,
     reload: async () => undefined,
-    removePublisher: () => undefined,
     save: async () => undefined,
     search: "",
     selected: [{ key: "pub-1", publisherId: "pub-1" }],
@@ -29,9 +29,11 @@ export function createPresswallEditorFixture(
     setCategory: () => undefined,
     setNeedsOnboarding: () => undefined,
     setSearch: () => undefined,
+    toggleCustomLogo: () => undefined,
     togglePublisher: () => undefined,
     unavailableCount: 0,
     updateConfig: () => undefined,
+    uploadCustomLogo: async () => true,
     ...overrides,
   };
 }

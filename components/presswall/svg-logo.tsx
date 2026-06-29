@@ -18,10 +18,9 @@ function themeColor(resolvedTheme: string | undefined): string {
 }
 
 function prepareInlineSvg(svg: string): string {
-  const sanitized = sanitizeSvg(svg);
-  const cleaned = sanitized || svg.trim();
+  const cleaned = sanitizeSvg(svg);
 
-  if (!SVG_ROOT.test(cleaned)) {
+  if (!(cleaned && SVG_ROOT.test(cleaned))) {
     return "";
   }
 

@@ -72,9 +72,13 @@ export function EditorWorkspace({ editor }: EditorWorkspaceProps) {
                 <div className="p-3">
                   <OutletLibraryPanel
                     catalog={editor.catalog}
-                    onAddCustom={editor.addCustomPublisher}
-                    onRemove={editor.removePublisher}
+                    customLogos={editor.customLogos}
+                    onDeleteCustom={(logoId) => {
+                      editor.deleteCustomLogo(logoId).catch(() => undefined);
+                    }}
                     onToggle={editor.togglePublisher}
+                    onToggleCustom={editor.toggleCustomLogo}
+                    onUploadCustom={editor.uploadCustomLogo}
                     selected={editor.selected}
                   />
                 </div>

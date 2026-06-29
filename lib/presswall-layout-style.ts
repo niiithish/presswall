@@ -79,6 +79,36 @@ export function getLogosBarStyle(
   return { gap: `${gap}px` };
 }
 
+export function shouldConstrainBarRows(
+  viewport: PresswallViewport = "desktop"
+): boolean {
+  return viewport === "mobile";
+}
+
+export function getLogosBarConstrainedClassName(
+  alignment: PresswallAlignment
+): string {
+  return getLogosRowGridClassName(alignment);
+}
+
+export function getLogosBarConstrainedStyle(
+  logosPerRow: number,
+  gap: number,
+  logoSpacing: PresswallConfig["logoSpacing"]
+): React.CSSProperties {
+  const style = getLogosRowGridStyle(logosPerRow, gap);
+
+  if (logoSpacing === "space-between") {
+    return {
+      ...style,
+      columnGap: 0,
+      rowGap: `${gap}px`,
+    };
+  }
+
+  return style;
+}
+
 export function getMarqueeAlignmentClassName(
   alignment: PresswallAlignment
 ): string {

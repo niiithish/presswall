@@ -155,11 +155,27 @@ const PRESSWALL_CONFIG_KEYS = Object.keys(
   DEFAULT_PRESSWALL_CONFIG
 ) as (keyof PresswallConfig)[];
 
+const TEMPLATE_MATCH_IGNORED_KEYS = new Set<keyof PresswallConfig>([
+  "layout",
+  "logoSpacing",
+  "gap",
+  "marqueeSpeed",
+]);
+
 export function presswallConfigsEqual(
   left: PresswallConfig,
   right: PresswallConfig
 ): boolean {
   return PRESSWALL_CONFIG_KEYS.every((key) => left[key] === right[key]);
+}
+
+export function presswallTemplateConfigsEqual(
+  left: PresswallConfig,
+  right: PresswallConfig
+): boolean {
+  return PRESSWALL_CONFIG_KEYS.every(
+    (key) => TEMPLATE_MATCH_IGNORED_KEYS.has(key) || left[key] === right[key]
+  );
 }
 
 export function getResolvedPresswallTemplateConfig(
@@ -173,7 +189,7 @@ export function findMatchingPresswallTemplateId(
 ): PresswallTemplateId | null {
   for (const template of PRESSWALL_TEMPLATES) {
     if (
-      presswallConfigsEqual(
+      presswallTemplateConfigsEqual(
         config,
         getResolvedPresswallTemplateConfig(template.id)
       )

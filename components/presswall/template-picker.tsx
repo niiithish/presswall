@@ -25,12 +25,12 @@ interface TemplatePickerProps {
 
 function templateLayoutLabel(layout: PresswallTemplate["config"]["layout"]) {
   if (layout === "marquee") {
-    return "Scroll";
+    return "Marquee";
   }
   if (layout === "grid") {
     return "Grid";
   }
-  return "Bar";
+  return "Static grid";
 }
 
 function TemplateRow({

@@ -20,17 +20,19 @@ import type {
   PresswallConfig,
   PublisherCatalogItem,
   SelectedPublisher,
+  ShopCustomLogo,
   ShopPublisherSelection,
 } from "@/lib/presswall-types";
 
 export interface PresswallEditor {
-  addCustomPublisher: (name: string, svg: string) => void;
   applyTemplate: (templateId: PresswallTemplateId) => void;
   catalog: PublisherCatalogItem[];
   catalogById: Map<string, PublisherCatalogItem>;
   category: string;
   completeOnboarding: () => Promise<boolean>;
   config: PresswallConfig;
+  customLogos: ShopCustomLogo[];
+  deleteCustomLogo: (logoId: string) => Promise<void>;
   discard: () => void;
   isDirty: boolean;
   isLoading: boolean;
@@ -39,7 +41,6 @@ export interface PresswallEditor {
   matchedTemplateId: PresswallTemplateId | null;
   needsOnboarding: boolean;
   reload: () => Promise<void>;
-  removePublisher: (key: string) => void;
   save: () => Promise<void>;
   search: string;
   selected: SelectedPublisher[];
@@ -48,16 +49,19 @@ export interface PresswallEditor {
   setCategory: (value: string) => void;
   setNeedsOnboarding: (value: boolean) => void;
   setSearch: (value: string) => void;
+  toggleCustomLogo: (logo: ShopCustomLogo) => void;
   togglePublisher: (publisher: PublisherCatalogItem) => void;
   unavailableCount: number;
   updateConfig: <K extends keyof PresswallConfig>(
     key: K,
     value: PresswallConfig[K]
   ) => void;
+  uploadCustomLogo: (name: string, svg: string) => Promise<boolean>;
 }
 
 export function usePresswallEditor(): PresswallEditor {
   const [catalog, setCatalog] = useState<PublisherCatalogItem[]>([]);
+  const [customLogos, setCustomLogos] = useState<ShopCustomLogo[]>([]);
   const [config, setConfig] = useState<PresswallConfig>(
     DEFAULT_PRESSWALL_CONFIG
   );
@@ -86,6 +90,7 @@ export function usePresswallEditor(): PresswallEditor {
       const data = await fetchPresswallClientData();
 
       setCatalog(data.catalog);
+      setCustomLogos(data.customLogos);
       setConfig(data.config);
       setSelected(data.selected);
       setSavedSnapshot({
@@ -154,19 +159,86 @@ export function usePresswallEditor(): PresswallEditor {
     });
   }, []);
 
-  const removePublisher = useCallback((key: string) => {
-    setSelected((current) => current.filter((item) => item.key !== key));
+  const toggleCustomLogo = useCallback((logo: ShopCustomLogo) => {
+    setSelected((current) => {
+      const exists = current.some((item) => item.customLogoId === logo.id);
+      if (exists) {
+        return current.filter((item) => item.customLogoId !== logo.id);
+      }
+
+      return [
+        ...current,
+        {
+          key: `custom-${logo.id}`,
+          customLogoId: logo.id,
+          customName: logo.name,
+          customLogoSvg: logo.logoSvg,
+        },
+      ];
+    });
   }, []);
 
-  const addCustomPublisher = useCallback((name: string, svg: string) => {
-    setSelected((current) => [
-      ...current,
-      {
-        key: `custom-${Date.now()}`,
-        customName: name,
-        customLogoSvg: svg || undefined,
-      },
-    ]);
+  const uploadCustomLogo = useCallback(async (name: string, svg: string) => {
+    try {
+      const response = await adminFetch("/api/custom-logos", {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          logoSvg: svg,
+        }),
+      });
+
+      if (!response.ok) {
+        toast.error("Could not save custom logo");
+        return false;
+      }
+
+      const data = (await response.json()) as { logo: ShopCustomLogo };
+      const logo = data.logo;
+
+      setCustomLogos((current) => [...current, logo]);
+      setSelected((current) => {
+        if (current.some((item) => item.customLogoId === logo.id)) {
+          return current;
+        }
+
+        return [
+          ...current,
+          {
+            key: `custom-${logo.id}`,
+            customLogoId: logo.id,
+            customName: logo.name,
+            customLogoSvg: logo.logoSvg,
+          },
+        ];
+      });
+
+      return true;
+    } catch {
+      toast.error("Could not save custom logo");
+      return false;
+    }
+  }, []);
+
+  const deleteCustomLogo = useCallback(async (logoId: string) => {
+    try {
+      const response = await adminFetch(
+        `/api/custom-logos?id=${encodeURIComponent(logoId)}`,
+        { method: "DELETE" }
+      );
+
+      if (!response.ok) {
+        toast.error("Could not delete custom logo");
+        return;
+      }
+
+      setCustomLogos((current) => current.filter((logo) => logo.id !== logoId));
+      setSelected((current) =>
+        current.filter((item) => item.customLogoId !== logoId)
+      );
+    } catch {
+      toast.error("Could not delete custom logo");
+    }
   }, []);
 
   const savePresswall = useCallback(
@@ -222,8 +294,11 @@ export function usePresswallEditor(): PresswallEditor {
 
     setConfig(savedSnapshot.config);
     setSelected(savedSnapshot.selected.map((item) => ({ ...item })));
+    loadData().catch(() => {
+      toast.error("Failed to reload custom logos");
+    });
     toast.success("Changes discarded");
-  }, [savedSnapshot]);
+  }, [savedSnapshot, loadData]);
 
   const completeOnboarding = useCallback(
     () => savePresswall({ completeOnboarding: true }),
@@ -254,6 +329,7 @@ export function usePresswallEditor(): PresswallEditor {
     category,
     completeOnboarding,
     config,
+    customLogos,
     discard,
     isDirty,
     isLoading,
@@ -267,14 +343,15 @@ export function usePresswallEditor(): PresswallEditor {
     matchedTemplateId,
     selections,
     unavailableCount,
-    addCustomPublisher,
     applyTemplate,
-    removePublisher,
+    deleteCustomLogo,
     save,
     setCategory,
     setNeedsOnboarding,
     setSearch,
+    toggleCustomLogo,
     togglePublisher,
     updateConfig,
+    uploadCustomLogo,
   };
 }

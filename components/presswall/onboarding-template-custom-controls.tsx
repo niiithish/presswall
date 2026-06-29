@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BannerStylePicker } from "@/components/presswall/banner-style-picker";
 import { ColorField } from "@/components/presswall/color-field";
 import {
   SegmentedAlignment,
@@ -18,17 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { normalizeBannerStyleLayout } from "@/lib/banner-style";
 import type { PresswallConfig } from "@/lib/presswall-types";
 import { cn } from "@/lib/utils";
-
-const LAYOUT_OPTIONS: {
-  label: string;
-  value: PresswallConfig["layout"];
-}[] = [
-  { value: "bar", label: "Horizontal bar" },
-  { value: "grid", label: "Grid" },
-  { value: "marquee", label: "Auto-scroll" },
-];
 
 const COLOR_MODE_OPTIONS: {
   label: string;
@@ -188,28 +181,13 @@ export function OnboardingTemplateCustomControls({
 
         <TabsContent className="mt-0 space-y-3 p-3" value="layout">
           <ControlSection
-            description="How logos are arranged on the storefront."
-            title="Structure"
+            description="Changes how logos move. Your template colors and typography stay the same."
+            title="Banner style"
           >
-            <div className="space-y-1.5">
-              <Label>Layout type</Label>
-              <Select
-                items={LAYOUT_OPTIONS}
-                onValueChange={(value) =>
-                  onUpdate("layout", value as PresswallConfig["layout"])
-                }
-                value={config.layout}
-              >
-                <SelectTrigger className="h-9 w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="bar">Horizontal bar</SelectItem>
-                  <SelectItem value="grid">Grid</SelectItem>
-                  <SelectItem value="marquee">Auto-scroll</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <BannerStylePicker
+              onChange={(layout) => onUpdate("layout", layout)}
+              value={normalizeBannerStyleLayout(config.layout)}
+            />
           </ControlSection>
 
           {showRowControls ? (

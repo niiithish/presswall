@@ -75,12 +75,27 @@ export const shopCustomTemplates = sqliteTable(
   })
 );
 
+export const shopCustomLogos = sqliteTable(
+  "shop_custom_logos",
+  {
+    id: text("id").primaryKey(),
+    shop: text("shop").notNull(),
+    name: text("name").notNull(),
+    logoSvg: text("logo_svg").notNull(),
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => ({
+    shopIdx: index("shop_custom_logos_shop_idx").on(table.shop),
+  })
+);
+
 export const shopPublishers = sqliteTable(
   "shop_publishers",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     shop: text("shop").notNull(),
     publisherId: text("publisher_id"),
+    customLogoId: text("custom_logo_id"),
     customName: text("custom_name"),
     customLogoSvg: text("custom_logo_svg"),
     customUrl: text("custom_url"),

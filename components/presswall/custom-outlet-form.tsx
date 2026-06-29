@@ -16,7 +16,7 @@ import { LOGO_GUIDANCE } from "@/lib/logo-guidance";
 interface CustomOutletFormProps {
   compact?: boolean;
   featured?: boolean;
-  onAdd: (name: string, svg: string) => void;
+  onAdd: (name: string, svg: string) => void | Promise<void>;
 }
 
 export function CustomOutletForm({
@@ -40,7 +40,7 @@ export function CustomOutletForm({
 
     try {
       const svg = await pngFileToLogoSvg(logoFile);
-      onAdd(customName.trim(), svg);
+      await onAdd(customName.trim(), svg);
       setCustomName("");
       setLogoFile(null);
       resetUpload();

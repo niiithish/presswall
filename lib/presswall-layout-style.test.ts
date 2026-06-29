@@ -2,7 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { DEFAULT_PRESSWALL_CONFIG } from "@/lib/presswall-defaults";
 import {
   getLogosBarClassName,
+  getLogosBarConstrainedStyle,
   getLogosBarStyle,
+  shouldConstrainBarRows,
   usesDistributedLogoSpacing,
 } from "@/lib/presswall-layout-style";
 
@@ -44,6 +46,23 @@ describe("bar layout styles", () => {
     expect(getLogosBarClassName("center", "gap")).toContain("justify-center");
     expect(getLogosBarStyle(DEFAULT_PRESSWALL_CONFIG.gap, "gap")).toEqual({
       gap: `${DEFAULT_PRESSWALL_CONFIG.gap}px`,
+    });
+  });
+});
+
+describe("mobile bar row constraints", () => {
+  test("only constrains bar rows on mobile viewports", () => {
+    expect(shouldConstrainBarRows("mobile")).toBe(true);
+    expect(shouldConstrainBarRows("desktop")).toBe(false);
+  });
+
+  test("uses row gap without column gap for space-between bars", () => {
+    expect(getLogosBarConstrainedStyle(2, 24, "space-between")).toEqual({
+      gap: "24px",
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+      width: "100%",
+      columnGap: 0,
+      rowGap: "24px",
     });
   });
 });

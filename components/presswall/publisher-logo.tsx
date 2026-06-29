@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { SvgLogo } from "@/components/presswall/svg-logo";
 import { isBundledPublisherId } from "@/lib/bundled-publishers";
+import { customLogoSvgDataUrl } from "@/lib/custom-logo-render";
 import { bundledLogoPath } from "@/lib/publisher-logo-path";
 import { cn } from "@/lib/utils";
 
@@ -49,9 +49,24 @@ export function PublisherLogo({
   const [failed, setFailed] = useState(false);
 
   if (customLogoSvg) {
+    const dataUrl = customLogoSvgDataUrl(customLogoSvg);
+
     return (
       <LogoSlot className={className} style={style} title={name}>
-        <SvgLogo svg={customLogoSvg} />
+        {dataUrl ? (
+          // biome-ignore lint/performance/noImgElement: embedded svg data urls are more reliable than inline svg
+          <img
+            alt=""
+            className="presswall-logo-img"
+            height={32}
+            src={dataUrl}
+            width={140}
+          />
+        ) : (
+          <span className="font-semibold text-[0.625rem] text-muted-foreground uppercase">
+            {name.slice(0, 2)}
+          </span>
+        )}
       </LogoSlot>
     );
   }

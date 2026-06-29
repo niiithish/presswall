@@ -32,6 +32,16 @@ const MIGRATIONS = [
   "ALTER TABLE shop_configs ADD COLUMN content_max_width integer DEFAULT 840 NOT NULL",
   "UPDATE shop_configs SET content_max_width = 840 WHERE content_max_width = 640",
   "UPDATE shop_configs SET logo_height = 28, gap = 32 WHERE logo_height = 22",
+  "UPDATE shop_configs SET layout = 'bar' WHERE layout = 'slider'",
+  `CREATE TABLE IF NOT EXISTS shop_custom_logos (
+    id text PRIMARY KEY NOT NULL,
+    shop text NOT NULL,
+    name text NOT NULL,
+    logo_svg text NOT NULL,
+    created_at text NOT NULL
+  )`,
+  "CREATE INDEX IF NOT EXISTS shop_custom_logos_shop_idx ON shop_custom_logos (shop)",
+  "ALTER TABLE shop_publishers ADD COLUMN custom_logo_id text",
 ];
 
 function isIgnorableMigrationError(error: unknown): boolean {

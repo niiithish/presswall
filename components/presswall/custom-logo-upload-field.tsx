@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
+  CUSTOM_LOGO_MAX_INPUT_BYTES,
   CUSTOM_LOGO_PNG_ACCEPT,
   readPngPreviewUrl,
 } from "@/lib/custom-logo-png";
@@ -51,6 +52,11 @@ export function CustomLogoUploadField({
   const selectLogo = (file: File) => {
     if (file.type !== CUSTOM_LOGO_PNG_ACCEPT) {
       onError("Upload a PNG with a transparent background.");
+      return;
+    }
+
+    if (file.size > CUSTOM_LOGO_MAX_INPUT_BYTES) {
+      onError("PNG must be 2 MB or smaller.");
       return;
     }
 

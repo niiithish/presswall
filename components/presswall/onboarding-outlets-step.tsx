@@ -24,9 +24,13 @@ export function OnboardingOutletsStep({
       <div className="flex min-h-0 flex-1 flex-col rounded-xl border bg-card p-4 shadow-sm">
         <OutletLibraryPanel
           catalog={editor.catalog}
-          onAddCustom={editor.addCustomPublisher}
-          onRemove={editor.removePublisher}
+          customLogos={editor.customLogos}
+          onDeleteCustom={(logoId) => {
+            editor.deleteCustomLogo(logoId).catch(() => undefined);
+          }}
           onToggle={editor.togglePublisher}
+          onToggleCustom={editor.toggleCustomLogo}
+          onUploadCustom={editor.uploadCustomLogo}
           selected={editor.selected}
         />
       </div>

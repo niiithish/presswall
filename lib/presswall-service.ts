@@ -1,5 +1,6 @@
 import { asc, eq, inArray } from "drizzle-orm";
 import { isBundledPublisherId } from "@/lib/bundled-publishers";
+import { getShopCustomLogos } from "@/lib/custom-logo-service";
 import { DEFAULT_PRESSWALL_CONFIG } from "@/lib/presswall-defaults";
 import type {
   PresswallConfig,
@@ -59,7 +60,7 @@ function mapConfigRow(
     headingSpacing:
       row.headingSpacing ?? DEFAULT_PRESSWALL_CONFIG.headingSpacing,
     colorMode: row.colorMode,
-    layout: row.layout,
+    layout: row.layout === "slider" ? "bar" : row.layout,
     logoHeight: row.logoHeight,
     logosPerRowDesktop:
       row.logosPerRowDesktop ?? DEFAULT_PRESSWALL_CONFIG.logosPerRowDesktop,
@@ -118,13 +119,22 @@ function buildConfigRow(shop: string, config: PresswallConfig, now: string) {
 function sanitizeSelections(
   selections: ShopPublisherSelection[]
 ): ShopPublisherSelection[] {
-  return selections.map((selection) => ({
-    ...selection,
-    customName: selection.customName?.trim(),
-    customLogoSvg: selection.customLogoSvg
+  return selections.map((selection) => {
+    const customName = selection.customName?.trim();
+    const customLogoSvg = selection.customLogoSvg
       ? sanitizeSvg(selection.customLogoSvg)
-      : selection.customLogoSvg,
-  }));
+      : selection.customLogoSvg;
+
+    if (!selection.publisherId && customName && !customLogoSvg?.trim()) {
+      throw new Error("Custom outlet logo is invalid after sanitization");
+    }
+
+    return {
+      ...selection,
+      customName,
+      customLogoSvg,
+    };
+  });
 }
 
 export async function getPublisherCatalog(): Promise<PublisherCatalogItem[]> {
@@ -169,19 +179,30 @@ export async function needsOnboarding(shop: string): Promise<boolean> {
 export async function getShopPublisherSelections(
   shop: string
 ): Promise<ShopPublisherSelection[]> {
-  const rows = await db
-    .select()
-    .from(shopPublishers)
-    .where(eq(shopPublishers.shop, shop))
-    .orderBy(asc(shopPublishers.position));
+  const [rows, library] = await Promise.all([
+    db
+      .select()
+      .from(shopPublishers)
+      .where(eq(shopPublishers.shop, shop))
+      .orderBy(asc(shopPublishers.position)),
+    getShopCustomLogos(shop),
+  ]);
+  const libraryById = new Map(library.map((logo) => [logo.id, logo]));
 
-  return rows.map((row) => ({
-    publisherId: row.publisherId ?? undefined,
-    customName: row.customName ?? undefined,
-    customLogoSvg: row.customLogoSvg ?? undefined,
-    customUrl: row.customUrl ?? undefined,
-    position: row.position,
-  }));
+  return rows.map((row) => {
+    const libraryLogo = row.customLogoId
+      ? libraryById.get(row.customLogoId)
+      : undefined;
+
+    return {
+      publisherId: row.publisherId ?? undefined,
+      customLogoId: row.customLogoId ?? undefined,
+      customName: row.customName ?? libraryLogo?.name,
+      customLogoSvg: row.customLogoSvg ?? libraryLogo?.logoSvg,
+      customUrl: row.customUrl ?? undefined,
+      position: row.position,
+    };
+  });
 }
 
 export async function saveShopPresswall(
@@ -218,6 +239,7 @@ export async function saveShopPresswall(
         sanitizedSelections.map((selection, index) => ({
           shop,
           publisherId: selection.publisherId ?? null,
+          customLogoId: selection.customLogoId ?? null,
           customName: selection.customName ?? null,
           customLogoSvg: selection.customLogoSvg ?? null,
           customUrl: selection.customUrl || null,

@@ -96,6 +96,24 @@ describe("findMatchingPresswallTemplateId", () => {
 
     expect(findMatchingPresswallTemplateId(customized)).toBeNull();
   });
+
+  test("keeps the current template when only banner style changes", () => {
+    const classic = getResolvedPresswallTemplateConfig("classic");
+    const darkWithMarquee = {
+      ...getResolvedPresswallTemplateConfig("dark"),
+      layout: "marquee" as const,
+      logoSpacing: "gap" as const,
+    };
+
+    expect(
+      findMatchingPresswallTemplateId({
+        ...classic,
+        layout: "marquee",
+        logoSpacing: "gap",
+      })
+    ).toBe("classic");
+    expect(findMatchingPresswallTemplateId(darkWithMarquee)).toBe("dark");
+  });
 });
 
 describe("getPresswallDesignLabel", () => {
@@ -108,7 +126,7 @@ describe("getPresswallDesignLabel", () => {
   test("returns Custom when config no longer matches any template", () => {
     const config = {
       ...getResolvedPresswallTemplateConfig("classic"),
-      gap: 31,
+      headingText: "Featured on",
     };
 
     expect(getPresswallDesignLabel(config)).toBe("Custom");

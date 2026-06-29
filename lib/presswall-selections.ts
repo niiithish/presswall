@@ -8,6 +8,7 @@ export function buildSelections(
 ): ShopPublisherSelection[] {
   return selected.map((item, index) => ({
     publisherId: item.publisherId,
+    customLogoId: item.customLogoId,
     customName: item.customName,
     customLogoSvg: item.customLogoSvg,
     customUrl: item.customUrl,
@@ -19,8 +20,13 @@ export function selectedFromApi(
   selections: ShopPublisherSelection[]
 ): SelectedPublisher[] {
   return selections.map((selection, index) => ({
-    key: selection.publisherId ?? `custom-${index}`,
+    key:
+      selection.publisherId ??
+      (selection.customLogoId
+        ? `custom-${selection.customLogoId}`
+        : `custom-${index}`),
     publisherId: selection.publisherId,
+    customLogoId: selection.customLogoId,
     customName: selection.customName,
     customLogoSvg: selection.customLogoSvg,
     customUrl: selection.customUrl,

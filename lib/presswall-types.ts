@@ -42,22 +42,42 @@ export type PresswallConfig = z.infer<typeof presswallConfigSchema>;
 export const shopPublisherSelectionSchema = z
   .object({
     publisherId: z.string().optional(),
+    customLogoId: z.string().optional(),
     customName: z.string().max(120).optional(),
     customLogoSvg: z.string().max(MAX_CUSTOM_LOGO_SVG_LENGTH).optional(),
     customUrl: safeHttpUrlSchema.optional(),
     position: z.number().int(),
   })
   .refine(
-    (selection) =>
-      Boolean(selection.publisherId) || Boolean(selection.customName?.trim()),
-    { message: "Each selection needs a publisher or custom name" }
+    (selection) => {
+      if (selection.publisherId) {
+        return true;
+      }
+
+      return (
+        Boolean(selection.customName?.trim()) &&
+        Boolean(selection.customLogoSvg?.trim())
+      );
+    },
+    {
+      message:
+        "Each selection needs a bundled publisher or a custom name with logo",
+    }
   );
 
 export type ShopPublisherSelection = z.infer<
   typeof shopPublisherSelectionSchema
 >;
 
+export interface ShopCustomLogo {
+  createdAt: string;
+  id: string;
+  logoSvg: string;
+  name: string;
+}
+
 export interface SelectedPublisher {
+  customLogoId?: string;
   customLogoSvg?: string;
   customName?: string;
   customUrl?: string;

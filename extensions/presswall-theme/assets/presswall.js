@@ -5,6 +5,7 @@ const SCRIPT_TAG = /<script[\s\S]*?<\/script>/gi;
 const FOREIGN_OBJECT_TAG = /<foreignObject[\s\S]*?<\/foreignObject>/gi;
 const EVENT_HANDLER_ATTR = /\s(on\w+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
 const JAVASCRIPT_URI = /javascript:/gi;
+const MAX_CUSTOM_LOGO_SVG_LENGTH = 50_000;
 const INLINE_HEX_COLOR_PATTERN = /^[0-9a-f]{3}([0-9a-f]{3})?$/i;
 const INLINE_RGB_COLOR_PATTERN =
   /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i;
@@ -133,8 +134,16 @@ const INLINE_RGB_COLOR_PATTERN =
       `--presswall-heading-spacing:${headingSpacing}px`,
     ].join(";");
 
+    const inlineMarqueeHeading =
+      config.layout === "marquee" &&
+      config.showHeading &&
+      config.headingText &&
+      headingAlignment === "left";
+
     const heading =
-      config.showHeading && config.headingText && config.layout !== "marquee"
+      config.showHeading &&
+      config.headingText &&
+      (config.layout !== "marquee" || !inlineMarqueeHeading)
         ? `<p class="presswall-heading presswall-heading-align-${headingAlignment}" style="color:${textColor}">${escapeHtml(config.headingText)}</p>`
         : "";
 
@@ -151,7 +160,8 @@ const INLINE_RGB_COLOR_PATTERN =
         textColor,
         headingFontSize,
         marqueeSpeed,
-        logos
+        logos,
+        headingAlignment
       );
     }
 
@@ -172,14 +182,19 @@ const INLINE_RGB_COLOR_PATTERN =
     return `<div class="presswall-shell" style="${style}"><div class="presswall-content">${heading}<div class="presswall-bar presswall-spacing-${logoSpacing} presswall-align-${logoAlignment}" style="--lpr-d:${logosPerRowDesktop};--lpr-m:${logosPerRowMobile}">${logos}</div></div></div>`;
   }
 
-  function renderMarquee(c, s, bg, tx, hf, sp, logos) {
+  function renderMarquee(c, s, bg, tx, hf, sp, logos, headingAlignment) {
     const n = marqueeSegments(c.publishers.length);
-    const lead =
-      c.showHeading && c.headingText
-        ? `<div class="pw-mq-lead"><p class="pw-mq-label" style="color:${tx};font-size:${hf}px">${escapeHtml(c.headingText)}</p><span class="pw-mq-div"></span></div>`
+    const inlineHeading =
+      c.showHeading && c.headingText && headingAlignment === "left";
+    const aboveHeading =
+      c.showHeading && c.headingText && !inlineHeading
+        ? `<p class="presswall-heading presswall-heading-align-${headingAlignment}" style="color:${tx}">${escapeHtml(c.headingText)}</p>`
         : "";
+    const lead = inlineHeading
+      ? `<div class="pw-mq-lead"><p class="pw-mq-label" style="color:${tx};font-size:${hf}px">${escapeHtml(c.headingText)}</p><span class="pw-mq-div"></span></div>`
+      : "";
     const fade = bg === "transparent" ? "#fff" : bg;
-    return `<div class="presswall-shell" style="${s}"><div class="pw-mq-row">${lead}<div class="pw-mq-scroll" style="--pw-mq-fade:${fade}"><div class="pw-mq-wrap"><div class="pw-mq-track" style="animation-duration:${sp}s;--pw-mq-n:${n}">${logos.repeat(n)}</div></div><span class="pw-mq-fade pw-mq-fade-left" aria-hidden="true"></span><span class="pw-mq-fade pw-mq-fade-right" aria-hidden="true"></span></div></div></div>`;
+    return `<div class="presswall-shell" style="${s}"><div class="presswall-content">${aboveHeading}<div class="pw-mq-row">${lead}<div class="pw-mq-scroll" style="--pw-mq-fade:${fade}"><div class="pw-mq-wrap"><div class="pw-mq-track" style="animation-duration:${sp}s;--pw-mq-n:${n}">${logos.repeat(n)}</div></div><span class="pw-mq-fade pw-mq-fade-left" aria-hidden="true"></span><span class="pw-mq-fade pw-mq-fade-right" aria-hidden="true"></span></div></div></div></div>`;
   }
 
   function renderLogo(publisher, config, logoStyle) {
@@ -380,6 +395,7 @@ const INLINE_RGB_COLOR_PATTERN =
     }
 
     const cleaned = trimmed
+      .slice(0, MAX_CUSTOM_LOGO_SVG_LENGTH)
       .replace(SCRIPT_TAG, "")
       .replace(FOREIGN_OBJECT_TAG, "")
       .replace(EVENT_HANDLER_ATTR, "")

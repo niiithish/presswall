@@ -2,6 +2,7 @@
 
 import { PresswallStrip } from "@/components/presswall/strip-content";
 import { usePresswallStripItems } from "@/hooks/use-presswall-strip-items";
+import { usesInlineMarqueeHeading } from "@/lib/banner-style";
 import {
   getLogosPerRow,
   type PresswallViewport,
@@ -40,6 +41,33 @@ const onboardingEmptyState = (
     Select outlets to preview
   </div>
 );
+
+function usesContainedPreviewLayout(
+  config: PresswallConfig,
+  isLivePreview: boolean
+): boolean {
+  if (!isLivePreview) {
+    return false;
+  }
+
+  return config.layout !== "marquee" || !usesInlineMarqueeHeading(config);
+}
+
+function getPreviewLogoMaxWidth(
+  config: PresswallConfig,
+  isLivePreview: boolean,
+  isTemplateThumbnail: boolean
+): number {
+  if (isLivePreview) {
+    return Math.round(config.logoHeight * 3);
+  }
+
+  if (isTemplateThumbnail) {
+    return TEMPLATE_THUMBNAIL_LOGO_MAX_WIDTH;
+  }
+
+  return 56;
+}
 
 export function OnboardingPreview({
   catalog,
@@ -80,12 +108,12 @@ export function OnboardingPreview({
         isTemplateThumbnail ? TEMPLATE_THUMBNAIL_PADDING_CAP : 12
       );
 
-  let logoMaxWidth = 56;
-  if (isLivePreview) {
-    logoMaxWidth = Math.round(config.logoHeight * 3);
-  } else if (isTemplateThumbnail) {
-    logoMaxWidth = TEMPLATE_THUMBNAIL_LOGO_MAX_WIDTH;
-  }
+  const logoMaxWidth = getPreviewLogoMaxWidth(
+    config,
+    isLivePreview,
+    isTemplateThumbnail
+  );
+  const usesContainedLayout = usesContainedPreviewLayout(config, isLivePreview);
 
   const { items, renderLogo } = usePresswallStripItems({
     catalog,
@@ -95,7 +123,10 @@ export function OnboardingPreview({
     selections,
   });
 
-  const staticLimit = config.layout === "marquee" ? undefined : logosPerRow * 2;
+  const staticLimit =
+    isTemplateThumbnail && config.layout !== "marquee"
+      ? logosPerRow * 2
+      : undefined;
 
   return (
     <div
@@ -108,11 +139,9 @@ export function OnboardingPreview({
       }}
     >
       <div
-        className={cn(
-          isLivePreview && config.layout !== "marquee" && "mx-auto w-full"
-        )}
+        className={cn(usesContainedLayout && "mx-auto w-full")}
         style={
-          isLivePreview && config.layout !== "marquee"
+          usesContainedLayout
             ? { maxWidth: formatContentMaxWidth(config.contentMaxWidth) }
             : undefined
         }
@@ -130,6 +159,7 @@ export function OnboardingPreview({
           renderLogo={renderLogo}
           staticLayoutItemLimit={staticLimit}
           textColor={previewColors.textColor}
+          viewport={viewport}
         />
       </div>
     </div>

@@ -66,14 +66,23 @@ export async function PUT(request: NextRequest) {
     );
   }
 
-  await saveShopPresswall(
-    session.shop,
-    parsed.data.config,
-    parsed.data.selections,
-    {
-      completeOnboarding: parsed.data.completeOnboarding,
-    }
-  );
+  try {
+    await saveShopPresswall(
+      session.shop,
+      parsed.data.config,
+      parsed.data.selections,
+      {
+        completeOnboarding: parsed.data.completeOnboarding,
+      }
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Could not save Presswall settings";
+
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
 
   const accessToken = session.accessToken;
   if (!accessToken) {

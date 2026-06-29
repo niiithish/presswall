@@ -39,6 +39,7 @@ function setupHandoffMocks() {
       Promise.resolve({
         catalog: CATALOG_FIXTURE,
         config: DEFAULT_PRESSWALL_CONFIG,
+        customLogos: [],
         needsOnboarding: true,
         selected: [],
       }),
@@ -59,6 +60,13 @@ function setupHandoffMocks() {
               themeId: "gid://shopify/Theme/1",
               themeName: "Dawn",
             }),
+        });
+      }
+
+      if (path === "/api/custom-logos") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ logos: [] }),
         });
       }
 

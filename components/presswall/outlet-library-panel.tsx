@@ -1,6 +1,6 @@
 "use client";
 
-import { IconPhotoUp, IconSearch, IconX } from "@tabler/icons-react";
+import { IconPhotoUp, IconSearch, IconTrash } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { CustomOutletForm } from "@/components/presswall/custom-outlet-form";
 import { PublisherLogo } from "@/components/presswall/publisher-logo";
@@ -32,9 +32,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { LOGO_GUIDANCE } from "@/lib/logo-guidance";
 import type {
   PublisherCatalogItem,
   SelectedPublisher,
+  ShopCustomLogo,
 } from "@/lib/presswall-types";
 import { PUBLISHER_CATEGORIES } from "@/lib/publishers-seed";
 import { cn } from "@/lib/utils";
@@ -42,9 +44,11 @@ import { cn } from "@/lib/utils";
 interface OutletLibraryPanelProps {
   catalog: PublisherCatalogItem[];
   className?: string;
-  onAddCustom: (name: string, svg: string) => void;
-  onRemove: (key: string) => void;
+  customLogos: ShopCustomLogo[];
+  onDeleteCustom: (logoId: string) => void;
   onToggle: (publisher: PublisherCatalogItem) => void;
+  onToggleCustom: (logo: ShopCustomLogo) => void;
+  onUploadCustom: (name: string, svg: string) => Promise<boolean>;
   selected: SelectedPublisher[];
 }
 
@@ -145,42 +149,66 @@ function OutletTile({
   );
 }
 
-function UploadedTile({
-  item,
-  onRemove,
+function CustomLogoTile({
+  logo,
+  onDelete,
+  onToggle,
   position,
 }: {
-  item: SelectedPublisher;
-  onRemove: (key: string) => void;
-  position: number;
+  logo: ShopCustomLogo;
+  onDelete: () => void;
+  onToggle: () => void;
+  position: number | null;
 }) {
-  const name = item.customName ?? "Custom outlet";
+  const selected = position !== null;
 
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <div className="group relative flex h-10 items-center justify-center rounded-md border border-border bg-muted/30 px-1.5 ring-1 ring-border/60">
-            <PublisherLogo
-              className="[--logo-height:0.9375rem] [--logo-max-width:5.5rem]"
-              customLogoSvg={item.customLogoSvg}
-              name={name}
-            />
-            <PositionBadge position={position} />
-            <Button
-              aria-label={`Remove ${name}`}
-              className="absolute top-0.5 right-0.5 size-5 opacity-0 transition-opacity group-hover:opacity-100"
-              onClick={() => onRemove(item.key)}
-              size="icon-sm"
-              variant="secondary"
+    <div className="flex items-stretch gap-1">
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <button
+              aria-label={
+                selected
+                  ? `Remove ${logo.name} from press wall`
+                  : `Add ${logo.name} to press wall`
+              }
+              aria-pressed={selected}
+              className={cn(
+                "relative flex h-10 min-w-0 flex-1 items-center justify-center rounded-md border px-1.5 transition-all",
+                selected
+                  ? "border-border bg-muted/30 ring-1 ring-border/60"
+                  : "hover:border-border hover:bg-muted/20"
+              )}
+              onClick={onToggle}
+              type="button"
             >
-              <IconX stroke={2} />
-            </Button>
-          </div>
-        }
-      />
-      <TooltipContent>{name}</TooltipContent>
-    </Tooltip>
+              <PublisherLogo
+                className="[--logo-height:0.9375rem] [--logo-max-width:5.5rem]"
+                customLogoSvg={logo.logoSvg}
+                name={logo.name}
+              />
+              {selected ? <PositionBadge position={position} /> : null}
+            </button>
+          }
+        />
+        <TooltipContent>
+          {selected
+            ? "Remove from press wall"
+            : "Add to press wall · saved in your library"}
+        </TooltipContent>
+      </Tooltip>
+      <Button
+        aria-label={`Delete ${logo.name} from library`}
+        className="h-10 w-8 shrink-0 px-0 text-muted-foreground hover:text-destructive"
+        onClick={onDelete}
+        size="icon-sm"
+        title="Delete from library"
+        variant="ghost"
+      >
+        <IconTrash stroke={2} />
+      </Button>
+    </div>
   );
 }
 
@@ -225,7 +253,7 @@ function OutletGrid({
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border p-2">
-      <div className="grid grid-cols-3 gap-1.5">
+      <div className="grid grid-cols-2 gap-1.5">
         {filteredCatalog.map((publisher) => (
           <OutletTile
             key={publisher.id}
@@ -242,26 +270,27 @@ function OutletGrid({
 
 export function OutletLibraryPanel({
   catalog,
+  customLogos,
   selected,
   onToggle,
-  onAddCustom,
-  onRemove,
+  onToggleCustom,
+  onUploadCustom,
+  onDeleteCustom,
   className,
 }: OutletLibraryPanelProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [tab, setTab] = useState<"bundled" | "uploads">("bundled");
   const [uploadOpen, setUploadOpen] = useState(false);
-
-  const uploadedLogos = useMemo(
-    () => selected.filter((item) => !item.publisherId),
-    [selected]
-  );
+  const [deleteTarget, setDeleteTarget] = useState<ShopCustomLogo | null>(null);
 
   const selectionPositionByKey = useMemo(() => {
     const map = new Map<string, number>();
     selected.forEach((item, index) => {
-      map.set(item.publisherId ?? item.key, index + 1);
+      const selectionKey =
+        item.publisherId ??
+        (item.customLogoId ? `custom-${item.customLogoId}` : item.key);
+      map.set(selectionKey, index + 1);
     });
     return map;
   }, [selected]);
@@ -271,10 +300,12 @@ export function OutletLibraryPanel({
       ? "Select at least one outlet."
       : "Order follows your selection sequence.";
 
-  const handleUploadAdd = (name: string, svg: string) => {
-    onAddCustom(name, svg);
-    setTab("uploads");
-    setUploadOpen(false);
+  const handleUploadAdd = async (name: string, svg: string) => {
+    const saved = await onUploadCustom(name, svg);
+    if (saved) {
+      setTab("uploads");
+      setUploadOpen(false);
+    }
   };
 
   return (
@@ -318,7 +349,7 @@ export function OutletLibraryPanel({
           <TabsTrigger className="text-xs" value="uploads">
             Your uploads
             <span className="ml-1 text-muted-foreground tabular-nums">
-              {uploadedLogos.length}
+              {customLogos.length}
             </span>
           </TabsTrigger>
         </TabsList>
@@ -346,24 +377,32 @@ export function OutletLibraryPanel({
           className="mt-0 flex min-h-0 flex-1 flex-col outline-none"
           value="uploads"
         >
-          {uploadedLogos.length === 0 ? (
+          {customLogos.length === 0 ? (
             <Empty className="flex-1 border">
               <EmptyHeader>
                 <EmptyTitle>No uploads yet</EmptyTitle>
                 <EmptyDescription>
-                  Click Upload logo to add a custom outlet.
+                  Click Upload logo to add a custom outlet. Uploads stay saved
+                  here even when they are not on your press wall.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
             <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border p-2">
-              <div className="grid grid-cols-3 gap-1.5">
-                {uploadedLogos.map((item) => (
-                  <UploadedTile
-                    item={item}
-                    key={item.key}
-                    onRemove={onRemove}
-                    position={selectionPositionByKey.get(item.key) ?? 1}
+              <p className="mb-2 text-[0.6875rem] text-muted-foreground">
+                Click a logo to add or remove it from your press wall. Use the
+                trash icon to delete it from your library.
+              </p>
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {customLogos.map((logo) => (
+                  <CustomLogoTile
+                    key={logo.id}
+                    logo={logo}
+                    onDelete={() => setDeleteTarget(logo)}
+                    onToggle={() => onToggleCustom(logo)}
+                    position={
+                      selectionPositionByKey.get(`custom-${logo.id}`) ?? null
+                    }
                   />
                 ))}
               </div>
@@ -371,6 +410,42 @@ export function OutletLibraryPanel({
           )}
         </TabsContent>
       </Tabs>
+
+      <Dialog
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+          }
+        }}
+        open={deleteTarget !== null}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete logo?</DialogTitle>
+            <DialogDescription>
+              Remove &ldquo;{deleteTarget?.name}&rdquo; from your library
+              permanently. Clicking the logo only removes it from your press
+              wall.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setDeleteTarget(null)} variant="outline">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (deleteTarget) {
+                  onDeleteCustom(deleteTarget.id);
+                  setDeleteTarget(null);
+                }
+              }}
+              variant="destructive"
+            >
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog onOpenChange={setUploadOpen} open={uploadOpen}>
         <DialogContent>
@@ -380,6 +455,11 @@ export function OutletLibraryPanel({
               Add a custom outlet with a PNG on a transparent background.
             </DialogDescription>
           </DialogHeader>
+          <ul className="list-disc space-y-1 pl-4 text-muted-foreground text-xs">
+            {LOGO_GUIDANCE.tips.map((tip) => (
+              <li key={tip}>{tip}</li>
+            ))}
+          </ul>
           <CustomOutletForm compact featured onAdd={handleUploadAdd} />
         </DialogContent>
       </Dialog>
