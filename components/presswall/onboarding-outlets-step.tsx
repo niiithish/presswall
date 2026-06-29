@@ -21,6 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { PresswallEditor } from "@/hooks/use-presswall-editor";
 import type {
   PublisherCatalogItem,
@@ -55,15 +60,15 @@ function LibraryFilters({
   search: string;
 }) {
   return (
-    <div className="flex shrink-0 gap-2">
-      <div className="relative flex-1">
+    <div className="flex shrink-0 items-center gap-2">
+      <div className="relative min-w-0 flex-1">
         <IconSearch
           className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
           stroke={2}
         />
         <Input
           autoComplete="off"
-          className="h-9 pl-9"
+          className="h-9 py-0 pl-9"
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search outlets..."
           type="search"
@@ -74,7 +79,7 @@ function LibraryFilters({
         onValueChange={(value) => value && onCategoryChange(value)}
         value={category}
       >
-        <SelectTrigger className="h-9 w-36">
+        <SelectTrigger className="h-9 w-36 shrink-0 py-0 data-[size=default]:h-9">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent>
@@ -103,29 +108,32 @@ function OutletTile({
   const selected = position !== null;
 
   return (
-    <button
-      aria-label={name}
-      aria-pressed={selected}
-      className={cn(
-        "relative flex flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 transition-all",
-        selected
-          ? "border-foreground/50 bg-muted/60 ring-1 ring-foreground/30"
-          : "hover:border-foreground/20 hover:bg-muted/40"
-      )}
-      onClick={onToggle}
-      title={name}
-      type="button"
-    >
-      <PublisherLogo
-        className="[--logo-height:1.25rem]"
-        name={name}
-        publisherId={publisherId}
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            aria-label={name}
+            aria-pressed={selected}
+            className={cn(
+              "relative flex h-12 items-center justify-center rounded-lg border px-2 transition-all",
+              selected
+                ? "border-foreground/50 bg-muted/60 ring-1 ring-foreground/30"
+                : "hover:border-foreground/20 hover:bg-muted/40"
+            )}
+            onClick={onToggle}
+            type="button"
+          >
+            <PublisherLogo
+              className="[--logo-height:1.5rem]"
+              name={name}
+              publisherId={publisherId}
+            />
+            {selected ? <PositionBadge position={position} /> : null}
+          </button>
+        }
       />
-      <span className="w-full truncate text-center text-[0.625rem] text-muted-foreground leading-none">
-        {name}
-      </span>
-      {selected ? <PositionBadge position={position} /> : null}
-    </button>
+      <TooltipContent>{name}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -141,26 +149,30 @@ function UploadedTile({
   const name = item.customName ?? "Custom outlet";
 
   return (
-    <div className="group relative flex flex-col items-center justify-center gap-1 rounded-lg border border-foreground/50 bg-muted/60 px-1.5 py-2 ring-1 ring-foreground/30">
-      <PublisherLogo
-        className="[--logo-height:1.25rem]"
-        customLogoSvg={item.customLogoSvg}
-        name={name}
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <div className="group relative flex h-12 items-center justify-center rounded-lg border border-foreground/50 bg-muted/60 px-2 ring-1 ring-foreground/30">
+            <PublisherLogo
+              className="[--logo-height:1.5rem]"
+              customLogoSvg={item.customLogoSvg}
+              name={name}
+            />
+            <PositionBadge position={position} />
+            <Button
+              aria-label={`Remove ${name}`}
+              className="absolute top-0.5 right-0.5 size-5 opacity-0 transition-opacity group-hover:opacity-100"
+              onClick={() => onRemove(item.key)}
+              size="icon-sm"
+              variant="secondary"
+            >
+              <IconX stroke={2} />
+            </Button>
+          </div>
+        }
       />
-      <span className="w-full truncate text-center text-[0.625rem] text-muted-foreground leading-none">
-        {name}
-      </span>
-      <PositionBadge position={position} />
-      <Button
-        aria-label={`Remove ${name}`}
-        className="absolute top-0.5 right-0.5 size-5 opacity-0 transition-opacity group-hover:opacity-100"
-        onClick={() => onRemove(item.key)}
-        size="icon-sm"
-        variant="secondary"
-      >
-        <IconX stroke={2} />
-      </Button>
-    </div>
+      <TooltipContent>{name}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -205,7 +217,7 @@ function OutletGrid({
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border p-2">
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2">
         {filteredCatalog.map((publisher) => (
           <OutletTile
             key={publisher.id}
@@ -320,7 +332,7 @@ export function OnboardingOutletsStep({
                 </Empty>
               ) : (
                 <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border p-2">
-                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-2">
                     {uploadedLogos.map((item) => (
                       <UploadedTile
                         item={item}
