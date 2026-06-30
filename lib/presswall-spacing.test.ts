@@ -17,10 +17,9 @@ describe("deriveLogoGap", () => {
     expect(deriveLogoGap(28, "bar")).toBe(32);
   });
 
-  test("uses tighter spacing for grid layouts", () => {
-    expect(deriveLogoGap(11, "grid")).toBe(10);
-    expect(deriveLogoGap(16, "grid")).toBe(14);
-    expect(deriveLogoGap(32, "grid")).toBe(28);
+  test("uses the same spacing multiplier for marquee layouts", () => {
+    expect(deriveLogoGap(11, "marquee")).toBe(12);
+    expect(deriveLogoGap(32, "marquee")).toBe(36);
   });
 });
 
@@ -52,14 +51,14 @@ describe("withDerivedSpacing", () => {
   test("fills spacing fields from typography and layout", () => {
     const config = withDerivedSpacing({
       ...DEFAULT_PRESSWALL_CONFIG,
-      layout: "grid",
+      layout: "bar",
       logoHeight: 32,
       headingFontSize: 16,
       gap: 10,
       headingSpacing: 8,
     });
 
-    expect(config.gap).toBe(28);
+    expect(config.gap).toBe(36);
     expect(config.headingSpacing).toBe(54);
   });
 });

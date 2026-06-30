@@ -6,14 +6,23 @@ import type {
 export function buildSelections(
   selected: SelectedPublisher[]
 ): ShopPublisherSelection[] {
-  return selected.map((item, index) => ({
-    publisherId: item.publisherId,
-    customLogoId: item.customLogoId,
-    customName: item.customName,
-    customLogoSvg: item.customLogoSvg,
-    customUrl: item.customUrl,
-    position: index,
-  }));
+  return selected.map((item, index) => {
+    if (item.customLogoId) {
+      return {
+        customLogoId: item.customLogoId,
+        customUrl: item.customUrl,
+        position: index,
+      };
+    }
+
+    return {
+      publisherId: item.publisherId,
+      customName: item.customName,
+      customLogoSvg: item.customLogoSvg,
+      customUrl: item.customUrl,
+      position: index,
+    };
+  });
 }
 
 export function selectedFromApi(

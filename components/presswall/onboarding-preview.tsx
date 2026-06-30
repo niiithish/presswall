@@ -2,7 +2,7 @@
 
 import { PresswallStrip } from "@/components/presswall/strip-content";
 import { usePresswallStripItems } from "@/hooks/use-presswall-strip-items";
-import { usesInlineMarqueeHeading } from "@/lib/banner-style";
+import { usesInlineMarqueeHeading } from "@/lib/presswall-heading-rules";
 import {
   getLogosPerRow,
   type PresswallViewport,

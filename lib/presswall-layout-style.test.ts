@@ -27,7 +27,7 @@ describe("usesDistributedLogoSpacing", () => {
     ).toBe(false);
     expect(
       usesDistributedLogoSpacing({
-        layout: "grid",
+        layout: "marquee",
         logoSpacing: "space-between",
       })
     ).toBe(false);

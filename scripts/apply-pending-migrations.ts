@@ -33,6 +33,7 @@ const MIGRATIONS = [
   "UPDATE shop_configs SET content_max_width = 840 WHERE content_max_width = 640",
   "UPDATE shop_configs SET logo_height = 28, gap = 32 WHERE logo_height = 22",
   "UPDATE shop_configs SET layout = 'bar' WHERE layout = 'slider'",
+  "UPDATE shop_configs SET layout = 'bar' WHERE layout = 'grid'",
   `CREATE TABLE IF NOT EXISTS shop_custom_logos (
     id text PRIMARY KEY NOT NULL,
     shop text NOT NULL,

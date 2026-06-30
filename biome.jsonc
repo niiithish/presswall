@@ -15,16 +15,6 @@
           }
         }
       }
-    },
-    {
-      "includes": ["components/presswall/svg-logo.tsx"],
-      "linter": {
-        "rules": {
-          "security": {
-            "noDangerouslySetInnerHtml": "off"
-          }
-        }
-      }
     }
   ]
 }

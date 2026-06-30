@@ -26,7 +26,7 @@ export function OnboardingOutletsStep({
           catalog={editor.catalog}
           customLogos={editor.customLogos}
           onDeleteCustom={(logoId) => {
-            editor.deleteCustomLogo(logoId).catch(() => undefined);
+            editor.deleteCustomLogo(logoId);
           }}
           onToggle={editor.togglePublisher}
           onToggleCustom={editor.toggleCustomLogo}

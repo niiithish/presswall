@@ -1,4 +1,5 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
+import { isPendingCustomLogoId } from "@/lib/custom-logo-pending";
 import type { ShopCustomLogo } from "@/lib/presswall-types";
 import { sanitizeSvg } from "@/lib/svg-sanitize";
 import { db } from "@/src/db";
@@ -15,45 +16,9 @@ function mapCustomLogoRow(
   };
 }
 
-async function migrateLegacyCustomLogos(shop: string): Promise<void> {
-  const legacyRows = await db
-    .select()
-    .from(shopPublishers)
-    .where(eq(shopPublishers.shop, shop));
-
-  for (const row of legacyRows) {
-    if (!row.customLogoSvg?.trim() || row.customLogoId) {
-      continue;
-    }
-
-    const sanitized = sanitizeSvg(row.customLogoSvg);
-    if (!sanitized) {
-      continue;
-    }
-
-    const id = crypto.randomUUID();
-    const createdAt = new Date().toISOString();
-
-    await db.insert(shopCustomLogos).values({
-      id,
-      shop,
-      name: row.customName?.trim() || "Custom outlet",
-      logoSvg: sanitized,
-      createdAt,
-    });
-
-    await db
-      .update(shopPublishers)
-      .set({ customLogoId: id })
-      .where(eq(shopPublishers.id, row.id));
-  }
-}
-
 export async function getShopCustomLogos(
   shop: string
 ): Promise<ShopCustomLogo[]> {
-  await migrateLegacyCustomLogos(shop);
-
   const rows = await db
     .select()
     .from(shopCustomLogos)
@@ -91,20 +56,125 @@ export async function createShopCustomLogo(
   return logo;
 }
 
-export async function deleteShopCustomLogo(
+export function deleteShopCustomLogo(
   shop: string,
   logoId: string
-): Promise<void> {
-  await db
-    .delete(shopCustomLogos)
-    .where(and(eq(shopCustomLogos.id, logoId), eq(shopCustomLogos.shop, shop)));
-
-  await db
-    .delete(shopPublishers)
-    .where(
-      and(
-        eq(shopPublishers.shop, shop),
-        eq(shopPublishers.customLogoId, logoId)
+): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const deleted = await tx
+      .delete(shopCustomLogos)
+      .where(
+        and(eq(shopCustomLogos.id, logoId), eq(shopCustomLogos.shop, shop))
       )
-    );
+      .returning({ id: shopCustomLogos.id });
+
+    if (deleted.length === 0) {
+      return false;
+    }
+
+    await tx
+      .delete(shopPublishers)
+      .where(
+        and(
+          eq(shopPublishers.shop, shop),
+          eq(shopPublishers.customLogoId, logoId)
+        )
+      );
+
+    return true;
+  });
+}
+
+export interface CustomLogoSyncInput {
+  id: string;
+  logoSvg: string;
+  name: string;
+}
+
+type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+export async function syncShopCustomLogosInTransaction(
+  tx: DbTransaction,
+  shop: string,
+  desired: CustomLogoSyncInput[]
+): Promise<{ idMap: Map<string, string>; logos: ShopCustomLogo[] }> {
+  const idMap = new Map<string, string>();
+  const existing = await tx
+    .select()
+    .from(shopCustomLogos)
+    .where(eq(shopCustomLogos.shop, shop));
+
+  const desiredPersistedIds = new Set(
+    desired
+      .filter((logo) => !isPendingCustomLogoId(logo.id))
+      .map((logo) => logo.id)
+  );
+
+  const deleteIds = existing
+    .map((row) => row.id)
+    .filter((id) => !desiredPersistedIds.has(id));
+
+  if (deleteIds.length > 0) {
+    await tx
+      .delete(shopCustomLogos)
+      .where(
+        and(
+          eq(shopCustomLogos.shop, shop),
+          inArray(shopCustomLogos.id, deleteIds)
+        )
+      );
+
+    await tx
+      .delete(shopPublishers)
+      .where(
+        and(
+          eq(shopPublishers.shop, shop),
+          inArray(shopPublishers.customLogoId, deleteIds)
+        )
+      );
+  }
+
+  for (const logo of desired) {
+    if (!isPendingCustomLogoId(logo.id)) {
+      continue;
+    }
+
+    const sanitized = sanitizeSvg(logo.logoSvg);
+    if (!sanitized) {
+      throw new Error("Custom outlet logo is invalid after sanitization");
+    }
+
+    const id = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+
+    await tx.insert(shopCustomLogos).values({
+      id,
+      shop,
+      name: logo.name.trim(),
+      logoSvg: sanitized,
+      createdAt,
+    });
+
+    idMap.set(logo.id, id);
+  }
+
+  const rows = await tx
+    .select()
+    .from(shopCustomLogos)
+    .where(eq(shopCustomLogos.shop, shop))
+    .orderBy(asc(shopCustomLogos.createdAt));
+
+  return {
+    idMap,
+    logos: rows.map(mapCustomLogoRow),
+  };
+}
+
+export function syncShopCustomLogos(
+  shop: string,
+  desired: CustomLogoSyncInput[]
+): Promise<{ idMap: Map<string, string>; logos: ShopCustomLogo[] }> {
+  return db.transaction((tx) =>
+    syncShopCustomLogosInTransaction(tx, shop, desired)
+  );
 }

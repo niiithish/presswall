@@ -5,7 +5,7 @@ import {
   MarqueeLayout,
   MarqueeTrack,
 } from "@/components/presswall/marquee-layout";
-import { usesInlineMarqueeHeading } from "@/lib/banner-style";
+import { usesInlineMarqueeHeading } from "@/lib/presswall-heading-rules";
 import {
   getHeadingClassName,
   getHeadingStyle,
@@ -15,8 +15,6 @@ import {
   getLogosBarConstrainedClassName,
   getLogosBarConstrainedStyle,
   getLogosBarStyle,
-  getLogosRowGridClassName,
-  getLogosRowGridStyle,
   type PresswallViewport,
   shouldConstrainBarRows,
 } from "@/lib/presswall-layout-style";
@@ -142,33 +140,6 @@ function LogoBar({
   );
 }
 
-function LogoGrid({
-  gap,
-  items,
-  logoAlignment,
-  logosPerRow,
-  renderLogo,
-}: {
-  gap: number;
-  items: StorefrontPublisher[];
-  logoAlignment: PresswallStripConfig["logoAlignment"];
-  logosPerRow: number;
-  renderLogo: (item: StorefrontPublisher) => React.ReactNode;
-}) {
-  return (
-    <div
-      className={getLogosRowGridClassName(logoAlignment)}
-      style={getLogosRowGridStyle(logosPerRow, gap)}
-    >
-      {items.map((item) => (
-        <div className="flex min-w-0 items-center" key={item.id}>
-          {renderLogo(item)}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export const PresswallStrip = memo(function PresswallStrip({
   backgroundColor,
   config,
@@ -237,25 +208,15 @@ export const PresswallStrip = memo(function PresswallStrip({
         headingOptions={headingOptions}
         textColor={textColor}
       />
-      {config.layout === "grid" ? (
-        <LogoGrid
-          gap={config.gap}
-          items={displayItems}
-          logoAlignment={config.logoAlignment}
-          logosPerRow={logosPerRow}
-          renderLogo={renderLogo}
-        />
-      ) : (
-        <LogoBar
-          constrainRows={shouldConstrainBarRows(viewport)}
-          gap={config.gap}
-          items={displayItems}
-          logoAlignment={config.logoAlignment}
-          logoSpacing={config.logoSpacing}
-          logosPerRow={logosPerRow}
-          renderLogo={renderLogo}
-        />
-      )}
+      <LogoBar
+        constrainRows={shouldConstrainBarRows(viewport)}
+        gap={config.gap}
+        items={displayItems}
+        logoAlignment={config.logoAlignment}
+        logoSpacing={config.logoSpacing}
+        logosPerRow={logosPerRow}
+        renderLogo={renderLogo}
+      />
     </>
   );
 });

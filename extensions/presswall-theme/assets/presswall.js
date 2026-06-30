@@ -5,6 +5,7 @@ const SCRIPT_TAG = /<script[\s\S]*?<\/script>/gi;
 const FOREIGN_OBJECT_TAG = /<foreignObject[\s\S]*?<\/foreignObject>/gi;
 const EVENT_HANDLER_ATTR = /\s(on\w+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
 const JAVASCRIPT_URI = /javascript:/gi;
+// Keep in sync with lib/presswall-validation.ts and lib/presswall-heading-rules.ts.
 const MAX_CUSTOM_LOGO_SVG_LENGTH = 50_000;
 const INLINE_HEX_COLOR_PATTERN = /^[0-9a-f]{3}([0-9a-f]{3})?$/i;
 const INLINE_RGB_COLOR_PATTERN =
@@ -163,15 +164,6 @@ const INLINE_RGB_COLOR_PATTERN =
         logos,
         headingAlignment
       );
-    }
-
-    if (config.layout === "grid") {
-      return `<div class="presswall-shell" style="${style}"><div class="presswall-content">${heading}<div class="presswall-grid presswall-align-${logoAlignment}" style="--lpr-d:${logosPerRowDesktop};--lpr-m:${logosPerRowMobile}">${config.publishers
-        .map(
-          (publisher) =>
-            `<div class="pw-gi">${renderLogo(publisher, config, logoStyle)}</div>`
-        )
-        .join("")}</div></div></div>`;
     }
 
     const logoSpacing =

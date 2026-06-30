@@ -1,3 +1,4 @@
+import { normalizePresswallLayout } from "@/lib/normalize-presswall-layout";
 import type { PresswallConfig } from "@/lib/presswall-types";
 
 export type BannerStyleLayout = "marquee" | "bar";
@@ -22,44 +23,14 @@ export const BANNER_STYLE_OPTIONS: BannerStyleOption[] = [
 ];
 
 export function normalizeBannerStyleLayout(
-  layout: PresswallConfig["layout"]
+  layout: PresswallConfig["layout"] | string
 ): BannerStyleLayout {
-  if (layout === "marquee") {
-    return "marquee";
-  }
-
-  return "bar";
+  return normalizePresswallLayout(layout);
 }
 
 export function isBannerStyleLayout(
-  layout: PresswallConfig["layout"]
+  layout: PresswallConfig["layout"] | string
 ): layout is BannerStyleLayout {
-  return layout === "marquee" || layout === "bar";
-}
-
-export function usesInlineMarqueeHeading(
-  config: Pick<
-    PresswallConfig,
-    "headingAlignment" | "headingText" | "layout" | "showHeading"
-  >
-): boolean {
-  return (
-    config.layout === "marquee" &&
-    config.showHeading &&
-    config.headingText.length > 0 &&
-    config.headingAlignment === "left"
-  );
-}
-
-export function usesAboveStripHeading(
-  config: Pick<
-    PresswallConfig,
-    "headingAlignment" | "headingText" | "layout" | "showHeading"
-  >
-): boolean {
-  return (
-    config.showHeading &&
-    config.headingText.length > 0 &&
-    !usesInlineMarqueeHeading(config)
-  );
+  const normalized = normalizePresswallLayout(layout);
+  return normalized === "marquee" || normalized === "bar";
 }

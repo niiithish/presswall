@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizePresswallLayout } from "@/lib/normalize-presswall-layout";
 import {
   cssColorSchema,
   MAX_CUSTOM_LOGO_SVG_LENGTH,
@@ -6,7 +7,9 @@ import {
 } from "@/lib/presswall-validation";
 
 export const colorModeSchema = z.enum(["mono", "color", "muted"]);
-export const layoutSchema = z.enum(["bar", "grid", "marquee"]);
+export const layoutSchema = z
+  .enum(["bar", "grid", "marquee", "slider"])
+  .transform(normalizePresswallLayout);
 export const alignmentSchema = z.enum(["left", "center", "right"]);
 export type PresswallAlignment = z.infer<typeof alignmentSchema>;
 
@@ -54,6 +57,10 @@ export const shopPublisherSelectionSchema = z
         return true;
       }
 
+      if (selection.customLogoId?.trim()) {
+        return true;
+      }
+
       return (
         Boolean(selection.customName?.trim()) &&
         Boolean(selection.customLogoSvg?.trim())
@@ -61,9 +68,17 @@ export const shopPublisherSelectionSchema = z
     },
     {
       message:
-        "Each selection needs a bundled publisher or a custom name with logo",
+        "Each selection needs a bundled publisher, a custom logo id, or a custom name with logo",
     }
   );
+
+export const customLogoSaveSchema = z.object({
+  id: z.string(),
+  name: z.string().trim().min(1).max(120),
+  logoSvg: z.string().min(1).max(MAX_CUSTOM_LOGO_SVG_LENGTH),
+});
+
+export type CustomLogoSaveInput = z.infer<typeof customLogoSaveSchema>;
 
 export type ShopPublisherSelection = z.infer<
   typeof shopPublisherSelectionSchema

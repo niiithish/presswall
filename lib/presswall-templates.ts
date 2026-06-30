@@ -110,11 +110,7 @@ export function resolveTemplateLogoSpacing(
     return "gap";
   }
 
-  if (layout === "bar") {
-    return explicit === "gap" ? "gap" : "space-between";
-  }
-
-  return "gap";
+  return explicit === "gap" ? "gap" : "space-between";
 }
 
 export function getPresswallTemplate(

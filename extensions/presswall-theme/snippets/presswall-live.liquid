@@ -105,35 +105,6 @@
             </div>
           </div>
         </div>
-      {%- elsif pw.layout == 'grid' -%}
-        <div class="presswall-content">
-          {%- if pw.showHeading and pw.headingText != blank -%}
-            <p
-              class="presswall-heading presswall-heading-align-{{ heading_alignment }}"
-              style="color:{{ pw.textColor | default: '#111111' }}"
-            >
-              {{ pw.headingText | escape }}
-            </p>
-          {%- endif -%}
-          <div
-            class="presswall-grid presswall-align-{{ logo_alignment }}"
-            style="--lpr-d:{{ logos_per_row_desktop }};--lpr-m:{{ logos_per_row_mobile }}"
-          >
-            {%- for publisher in pw.publishers -%}
-              <div class="pw-gi">
-                <div
-                  class="presswall-logo"
-                  style="height:{{ logo_height }}px;{{ logo_filter }}{% if logo_opacity != '' %}opacity:{{ logo_opacity }};{% endif %}"
-                >
-                  {% render 'presswall-publisher-logo',
-                    publisher: publisher,
-                    height: logo_height
-                  %}
-                </div>
-              </div>
-            {%- endfor -%}
-          </div>
-        </div>
       {%- else -%}
         <div class="presswall-content">
           {%- if pw.showHeading and pw.headingText != blank -%}

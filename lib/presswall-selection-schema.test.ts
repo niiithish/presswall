@@ -24,7 +24,16 @@ describe("shopPublisherSelectionSchema", () => {
     expect(parsed.success).toBe(true);
   });
 
-  test("rejects custom outlets without logo svg", () => {
+  test("accepts custom outlets with library logo id", () => {
+    const parsed = shopPublisherSelectionSchema.safeParse({
+      customLogoId: "logo-123",
+      position: 2,
+    });
+
+    expect(parsed.success).toBe(true);
+  });
+
+  test("rejects custom outlets without logo svg or library id", () => {
     const parsed = shopPublisherSelectionSchema.safeParse({
       customName: "Local Podcast",
       position: 1,

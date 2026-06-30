@@ -2,9 +2,11 @@ import { describe, expect, test } from "bun:test";
 import {
   BANNER_STYLE_OPTIONS,
   normalizeBannerStyleLayout,
+} from "@/lib/banner-style";
+import {
   usesAboveStripHeading,
   usesInlineMarqueeHeading,
-} from "@/lib/banner-style";
+} from "@/lib/presswall-heading-rules";
 import { getResolvedPresswallTemplateConfig } from "@/lib/presswall-templates";
 
 describe("normalizeBannerStyleLayout", () => {

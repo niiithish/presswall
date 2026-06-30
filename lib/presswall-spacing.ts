@@ -5,7 +5,6 @@ const HEADING_SPACING_PER_FONT_SIZE = 10 / 3;
 
 const LAYOUT_GAP_MULTIPLIER: Record<PresswallConfig["layout"], number> = {
   bar: 1,
-  grid: 0.778,
   marquee: 1,
 };
 

@@ -90,7 +90,7 @@ export function OnboardingTemplateCustomControls({
   onUpdate,
 }: OnboardingTemplateCustomControlsProps) {
   const [activeTab, setActiveTab] = useState<CustomTabId>("text");
-  const showRowControls = config.layout === "bar" || config.layout === "grid";
+  const showRowControls = config.layout === "bar";
 
   return (
     <Tabs
@@ -216,7 +216,7 @@ export function OnboardingTemplateCustomControls({
             </ControlSection>
           ) : null}
 
-          {config.layout === "bar" || config.layout === "grid" ? (
+          {config.layout === "bar" ? (
             <ControlSection
               description="Align the logo row independently from the heading."
               title="Logo alignment"
@@ -341,7 +341,6 @@ export function OnboardingTemplateCustomControls({
               </div>
             ) : null}
             {config.layout === "marquee" ||
-            config.layout === "grid" ||
             (config.layout === "bar" && config.logoSpacing === "gap") ? (
               <SliderField
                 hint={
@@ -357,7 +356,7 @@ export function OnboardingTemplateCustomControls({
                 value={config.gap}
               />
             ) : null}
-            {config.layout === "bar" || config.layout === "grid" ? (
+            {config.layout === "bar" ? (
               <SliderField
                 hint="Max width of the heading and logo row."
                 label="Strip width"

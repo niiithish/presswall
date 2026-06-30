@@ -1,10 +1,17 @@
 import { asc, eq, inArray } from "drizzle-orm";
 import { isBundledPublisherId } from "@/lib/bundled-publishers";
-import { getShopCustomLogos } from "@/lib/custom-logo-service";
+import { isPendingCustomLogoId } from "@/lib/custom-logo-pending";
+import {
+  getShopCustomLogos,
+  syncShopCustomLogosInTransaction,
+} from "@/lib/custom-logo-service";
+import { normalizePresswallLayout } from "@/lib/normalize-presswall-layout";
 import { DEFAULT_PRESSWALL_CONFIG } from "@/lib/presswall-defaults";
 import type {
+  CustomLogoSaveInput,
   PresswallConfig,
   PublisherCatalogItem,
+  ShopCustomLogo,
   ShopPublisherSelection,
   StorefrontPayload,
 } from "@/lib/presswall-types";
@@ -52,6 +59,8 @@ function mapConfigRow(
     return DEFAULT_PRESSWALL_CONFIG;
   }
 
+  const layout = normalizePresswallLayout(row.layout);
+
   const parsed = presswallConfigSchema.safeParse({
     headingText: row.headingText,
     showHeading: row.showHeading,
@@ -60,7 +69,7 @@ function mapConfigRow(
     headingSpacing:
       row.headingSpacing ?? DEFAULT_PRESSWALL_CONFIG.headingSpacing,
     colorMode: row.colorMode,
-    layout: row.layout === "slider" ? "bar" : row.layout,
+    layout,
     logoHeight: row.logoHeight,
     logosPerRowDesktop:
       row.logosPerRowDesktop ?? DEFAULT_PRESSWALL_CONFIG.logosPerRowDesktop,
@@ -69,7 +78,7 @@ function mapConfigRow(
     gap: row.gap,
     logoSpacing:
       row.logoSpacing ??
-      (row.layout === "bar"
+      (layout === "bar"
         ? "space-between"
         : DEFAULT_PRESSWALL_CONFIG.logoSpacing),
     headingAlignment: row.headingAlignment,
@@ -96,7 +105,7 @@ function buildConfigRow(shop: string, config: PresswallConfig, now: string) {
     headingFontSize: config.headingFontSize,
     headingSpacing: config.headingSpacing,
     colorMode: config.colorMode,
-    layout: config.layout,
+    layout: normalizePresswallLayout(config.layout),
     logoHeight: config.logoHeight,
     logosPerRowDesktop: config.logosPerRowDesktop,
     logosPerRowMobile: config.logosPerRowMobile,
@@ -116,16 +125,49 @@ function buildConfigRow(shop: string, config: PresswallConfig, now: string) {
   };
 }
 
-function sanitizeSelections(
-  selections: ShopPublisherSelection[]
+function remapSelectionLogoIds(
+  selections: ShopPublisherSelection[],
+  idMap: Map<string, string>
 ): ShopPublisherSelection[] {
   return selections.map((selection) => {
+    if (!(selection.customLogoId && idMap.has(selection.customLogoId))) {
+      return selection;
+    }
+
+    return {
+      ...selection,
+      customLogoId: idMap.get(selection.customLogoId),
+    };
+  });
+}
+
+function assertResolvableCustomSelections(
+  selections: ShopPublisherSelection[],
+  libraryById: Map<string, ShopCustomLogo>
+): ShopPublisherSelection[] {
+  return selections.map((selection) => {
+    if (selection.publisherId) {
+      return selection;
+    }
+
+    if (selection.customLogoId) {
+      if (isPendingCustomLogoId(selection.customLogoId)) {
+        throw new Error("Custom logo changes must be saved before selection");
+      }
+
+      if (!libraryById.has(selection.customLogoId)) {
+        throw new Error("Custom outlet logo is missing from the library");
+      }
+
+      return selection;
+    }
+
     const customName = selection.customName?.trim();
     const customLogoSvg = selection.customLogoSvg
       ? sanitizeSvg(selection.customLogoSvg)
       : selection.customLogoSvg;
 
-    if (!selection.publisherId && customName && !customLogoSvg?.trim()) {
+    if (customName && !customLogoSvg?.trim()) {
       throw new Error("Custom outlet logo is invalid after sanitization");
     }
 
@@ -197,28 +239,53 @@ export async function getShopPublisherSelections(
     return {
       publisherId: row.publisherId ?? undefined,
       customLogoId: row.customLogoId ?? undefined,
-      customName: row.customName ?? libraryLogo?.name,
-      customLogoSvg: row.customLogoSvg ?? libraryLogo?.logoSvg,
+      customName: libraryLogo?.name ?? row.customName ?? undefined,
+      customLogoSvg: libraryLogo?.logoSvg ?? row.customLogoSvg ?? undefined,
       customUrl: row.customUrl ?? undefined,
       position: row.position,
     };
   });
 }
 
+export interface SaveShopPresswallResult {
+  customLogos: ShopCustomLogo[];
+  selections: ShopPublisherSelection[];
+}
+
 export async function saveShopPresswall(
   shop: string,
   config: PresswallConfig,
   selections: ShopPublisherSelection[],
-  options?: { completeOnboarding?: boolean }
-): Promise<void> {
+  options?: {
+    completeOnboarding?: boolean;
+    customLogos?: CustomLogoSaveInput[];
+  }
+): Promise<SaveShopPresswallResult> {
   const now = new Date().toISOString();
   const configRow = {
     ...buildConfigRow(shop, config, now),
     ...(options?.completeOnboarding ? { onboardingCompletedAt: now } : {}),
   };
-  const sanitizedSelections = sanitizeSelections(selections);
+
+  let syncedLogos = await getShopCustomLogos(shop);
 
   await db.transaction(async (tx) => {
+    const syncResult = options?.customLogos
+      ? await syncShopCustomLogosInTransaction(tx, shop, options.customLogos)
+      : { idMap: new Map<string, string>(), logos: syncedLogos };
+
+    syncedLogos = syncResult.logos;
+
+    const libraryById = new Map(syncedLogos.map((logo) => [logo.id, logo]));
+    const remappedSelections = remapSelectionLogoIds(
+      selections,
+      syncResult.idMap
+    );
+    const validatedSelections = assertResolvableCustomSelections(
+      remappedSelections,
+      libraryById
+    );
+
     await tx
       .insert(shopConfigs)
       .values(configRow)
@@ -234,20 +301,31 @@ export async function saveShopPresswall(
 
     await tx.delete(shopPublishers).where(eq(shopPublishers.shop, shop));
 
-    if (sanitizedSelections.length > 0) {
+    if (validatedSelections.length > 0) {
       await tx.insert(shopPublishers).values(
-        sanitizedSelections.map((selection, index) => ({
+        validatedSelections.map((selection, index) => ({
           shop,
           publisherId: selection.publisherId ?? null,
           customLogoId: selection.customLogoId ?? null,
-          customName: selection.customName ?? null,
-          customLogoSvg: selection.customLogoSvg ?? null,
+          customName: selection.customLogoId
+            ? null
+            : (selection.customName ?? null),
+          customLogoSvg: selection.customLogoId
+            ? null
+            : (selection.customLogoSvg ?? null),
           customUrl: selection.customUrl || null,
           position: selection.position ?? index,
         }))
       );
     }
   });
+
+  const hydratedSelections = await getShopPublisherSelections(shop);
+
+  return {
+    customLogos: syncedLogos,
+    selections: hydratedSelections,
+  };
 }
 
 export async function getStorefrontPayload(

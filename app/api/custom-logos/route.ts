@@ -67,6 +67,21 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Missing logo id" }, { status: 400 });
   }
 
-  await deleteShopCustomLogo(session.shop, logoId);
-  return NextResponse.json({ ok: true });
+  try {
+    const deleted = await deleteShopCustomLogo(session.shop, logoId);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { error: "Custom logo not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Could not delete custom logo";
+
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

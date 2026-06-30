@@ -27,9 +27,7 @@ function templateLayoutLabel(layout: PresswallTemplate["config"]["layout"]) {
   if (layout === "marquee") {
     return "Marquee";
   }
-  if (layout === "grid") {
-    return "Grid";
-  }
+
   return "Static grid";
 }
 

@@ -16,9 +16,8 @@ describe("resolveTemplateLogoSpacing", () => {
     expect(resolveTemplateLogoSpacing("bar", "gap")).toBe("gap");
   });
 
-  test("keeps fixed gap for marquee and grid layouts", () => {
+  test("keeps fixed gap for marquee layouts", () => {
     expect(resolveTemplateLogoSpacing("marquee")).toBe("gap");
-    expect(resolveTemplateLogoSpacing("grid")).toBe("gap");
     expect(resolveTemplateLogoSpacing("marquee", "space-between")).toBe("gap");
   });
 });

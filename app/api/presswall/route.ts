@@ -9,6 +9,7 @@ import {
   saveShopPresswall,
 } from "@/lib/presswall-service";
 import {
+  customLogoSaveSchema,
   presswallConfigSchema,
   shopPublisherSelectionSchema,
 } from "@/lib/presswall-types";
@@ -17,6 +18,7 @@ import { syncStorefrontMetafield } from "@/lib/sync-storefront-metafield";
 const saveSchema = z.object({
   config: presswallConfigSchema,
   selections: z.array(shopPublisherSelectionSchema),
+  customLogos: z.array(customLogoSaveSchema).optional(),
   completeOnboarding: z.boolean().optional(),
 });
 
@@ -67,14 +69,36 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    await saveShopPresswall(
+    const result = await saveShopPresswall(
       session.shop,
       parsed.data.config,
       parsed.data.selections,
       {
         completeOnboarding: parsed.data.completeOnboarding,
+        customLogos: parsed.data.customLogos,
       }
     );
+
+    const accessToken = session.accessToken;
+    if (!accessToken) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const syncResult = await syncStorefrontMetafield(session.shop, accessToken);
+
+    if (!syncResult.ok) {
+      console.error(
+        "Presswall storefront metafield sync failed",
+        syncResult.error
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      customLogos: result.customLogos,
+      selections: result.selections,
+      needsOnboarding: parsed.data.completeOnboarding ? false : undefined,
+    });
   } catch (error) {
     const message =
       error instanceof Error
@@ -83,23 +107,4 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ error: message }, { status: 400 });
   }
-
-  const accessToken = session.accessToken;
-  if (!accessToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const syncResult = await syncStorefrontMetafield(session.shop, accessToken);
-
-  if (!syncResult.ok) {
-    console.error(
-      "Presswall storefront metafield sync failed",
-      syncResult.error
-    );
-  }
-
-  return NextResponse.json({
-    ok: true,
-    needsOnboarding: parsed.data.completeOnboarding ? false : undefined,
-  });
 }
