@@ -148,25 +148,8 @@ export function TemplatePicker({
   return (
     <ScrollArea className="min-h-0 flex-1">
       <div className="space-y-2 p-3">
-        {PRESSWALL_TEMPLATES.map((template) => (
-          <TemplateRow
-            catalog={catalog}
-            customLogos={customLogos}
-            isSelected={matchedTemplateId === template.id}
-            key={template.id}
-            layoutLabel={templateLayoutLabel(template.config.layout)}
-            onApply={() => onApply(template.id)}
-            onCustomize={onCustomize}
-            previewConfig={applyPresswallTemplate(template.id)}
-            previewSelections={selections}
-            subtitle={template.description}
-            templateName={template.name}
-          />
-        ))}
-
         {customTemplates.length > 0 ? (
           <>
-            <Separator className="my-3" />
             <p className="px-0.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
               Saved banners
             </p>
@@ -188,8 +171,25 @@ export function TemplatePicker({
                 templateName={template.name}
               />
             ))}
+            <Separator className="my-3" />
           </>
         ) : null}
+
+        {PRESSWALL_TEMPLATES.map((template) => (
+          <TemplateRow
+            catalog={catalog}
+            customLogos={customLogos}
+            isSelected={matchedTemplateId === template.id}
+            key={template.id}
+            layoutLabel={templateLayoutLabel(template.config.layout)}
+            onApply={() => onApply(template.id)}
+            onCustomize={onCustomize}
+            previewConfig={applyPresswallTemplate(template.id)}
+            previewSelections={selections}
+            subtitle={template.description}
+            templateName={template.name}
+          />
+        ))}
       </div>
     </ScrollArea>
   );
