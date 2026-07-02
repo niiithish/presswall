@@ -4,6 +4,7 @@ import { shopify } from "@/lib/shopify";
 export async function GET(request: NextRequest) {
   const callback = await shopify.auth.callback({
     rawRequest: request,
+    expiring: true,
   });
 
   const { session } = callback;

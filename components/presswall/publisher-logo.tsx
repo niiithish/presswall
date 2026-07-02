@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { isBundledPublisherId } from "@/lib/bundled-publishers";
 import { customLogoSvgDataUrl } from "@/lib/custom-logo-render";
@@ -89,13 +88,14 @@ export function PublisherLogo({
 
   return (
     <LogoSlot className={className} style={style} title={name}>
-      <Image
+      {/* biome-ignore lint/performance/noImgElement: bundled logos are served from /api and load reliably in embedded admin */}
+      {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: onError fallback when a logo asset fails to load */}
+      <img
         alt={`${name} logo`}
         className="presswall-logo-img"
         height={32}
         onError={() => setFailed(true)}
         src={logoUrl}
-        unoptimized
         width={140}
       />
     </LogoSlot>

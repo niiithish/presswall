@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.shopify
+data
+drizzle
+remotion
+coverage
+.env*
+!.env.example
+*.md
+Dockerfile
+.dockerignore
+infra
+scripts/deploy-aws-apprunner.sh

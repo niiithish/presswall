@@ -6,7 +6,10 @@ import type {
   StorefrontPublisher,
 } from "@/lib/presswall-types";
 import { isSafeHttpUrl } from "@/lib/presswall-validation";
-import { absoluteBundledLogoUrl } from "@/lib/publisher-logo-path";
+import {
+  absoluteBundledLogoUrl,
+  bundledLogoPath,
+} from "@/lib/publisher-logo-path";
 import { sanitizeSvg } from "@/lib/svg-sanitize";
 
 function resolvePublisherUrl(
@@ -24,7 +27,7 @@ function resolvePublisherUrl(
 export function resolveStorefrontPublishers(
   catalog: PublisherCatalogItem[],
   selections: ShopPublisherSelection[],
-  options?: { customLogos?: ShopCustomLogo[] }
+  options?: { absoluteLogoUrls?: boolean; customLogos?: ShopCustomLogo[] }
 ): StorefrontPublisher[] {
   const catalogById = new Map(catalog.map((item) => [item.id, item]));
   const libraryById = new Map(
@@ -44,7 +47,9 @@ export function resolveStorefrontPublishers(
           isCustom: false,
           name: publisher.name,
           logoImageUrl: isBundledPublisherId(publisher.id)
-            ? absoluteBundledLogoUrl(publisher.id)
+            ? options?.absoluteLogoUrls
+              ? absoluteBundledLogoUrl(publisher.id)
+              : bundledLogoPath(publisher.id)
             : null,
           logoSvg: "",
           url: resolvePublisherUrl(selection.customUrl, publisher.websiteUrl),

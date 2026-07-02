@@ -11,6 +11,10 @@ function rowToSession(row: typeof sessions.$inferSelect): Session {
     isOnline: row.isOnline,
     scope: row.scope ?? undefined,
     expires: row.expires ? new Date(row.expires) : undefined,
+    refreshToken: row.refreshToken ?? undefined,
+    refreshTokenExpires: row.refreshTokenExpires
+      ? new Date(row.refreshTokenExpires)
+      : undefined,
     accessToken: row.accessToken,
     onlineAccessInfo: row.userId
       ? {
@@ -41,6 +45,8 @@ function sessionToRow(session: Session): typeof sessions.$inferInsert {
     isOnline: session.isOnline ?? false,
     scope: session.scope ?? null,
     expires: session.expires?.toISOString() ?? null,
+    refreshToken: session.refreshToken ?? null,
+    refreshTokenExpires: session.refreshTokenExpires?.toISOString() ?? null,
     accessToken: session.accessToken ?? "",
     userId: onlineInfo?.id ? String(onlineInfo.id) : null,
     firstName: onlineInfo?.first_name ?? null,
@@ -50,8 +56,6 @@ function sessionToRow(session: Session): typeof sessions.$inferInsert {
     locale: onlineInfo?.locale ?? null,
     collaborator: onlineInfo?.collaborator ?? null,
     emailVerified: onlineInfo?.email_verified ?? null,
-    refreshToken: null,
-    refreshTokenExpires: null,
   };
 }
 

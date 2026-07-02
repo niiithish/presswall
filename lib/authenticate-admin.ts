@@ -2,6 +2,7 @@ import { RequestedTokenType, type Session } from "@shopify/shopify-api";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { ensureOfflineSession } from "@/lib/ensure-offline-session";
 import { sessionStorage } from "@/lib/session-storage";
 import { shopify } from "@/lib/shopify";
 
@@ -53,6 +54,7 @@ async function exchangeOfflineSession(shop: string, sessionToken: string) {
     shop,
     sessionToken,
     requestedTokenType: RequestedTokenType.OfflineAccessToken,
+    expiring: true,
   });
 
   await sessionStorage.storeSession(exchangedSession);
@@ -83,6 +85,8 @@ async function resolveAuthenticatedAdmin(
     if (!session?.accessToken) {
       session = await exchangeOfflineSession(shop, sessionToken);
     }
+
+    session = await ensureOfflineSession(session as Session);
 
     return {
       shop,

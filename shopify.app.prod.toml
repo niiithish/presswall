@@ -1,0 +1,40 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "b45929a097e4af2198f5fea412a7a1ed"
+name = "Presswall"
+application_url = "https://presswall.noxify.io"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = false
+
+[webhooks]
+api_version = "2025-01"
+
+  [[webhooks.subscriptions]]
+  uri = "/api/webhooks"
+  topics = [ "app/uninstalled" ]
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_themes,write_app_proxy"
+
+[auth]
+redirect_urls = [ "https://presswall.noxify.io/api/auth/callback" ]
+
+[app_proxy]
+url = "https://presswall.noxify.io/api/proxy"
+subpath = "presswall"
+prefix = "apps"
+
+[pos]
+embedded = false
+
+[shop.metafields.app.storefront_config]
+type = "json"
+name = "Storefront config"
+
+  [shop.metafields.app.storefront_config.access]
+  admin = "merchant_read_write"
+  storefront = "public_read"

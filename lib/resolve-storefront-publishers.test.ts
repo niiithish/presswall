@@ -29,7 +29,19 @@ describe("resolveStorefrontPublishers", () => {
       name: "TechCrunch",
       logoSvg: "",
     });
-    expect(publishers[0]?.logoImageUrl).toContain("techcrunch");
+    expect(publishers[0]?.logoImageUrl).toBe("/api/publishers/techcrunch/logo");
+  });
+
+  test("can resolve absolute bundled logo urls for storefront payloads", () => {
+    const publishers = resolveStorefrontPublishers(
+      catalog,
+      [{ publisherId: "techcrunch", position: 0 }],
+      { absoluteLogoUrls: true }
+    );
+
+    expect(publishers[0]?.logoImageUrl).toContain(
+      "/api/publishers/techcrunch/logo"
+    );
   });
 
   test("drops unknown bundled publisher ids", () => {

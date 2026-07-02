@@ -11,21 +11,45 @@ import {
   shopPublishers,
 } from "./schema";
 
-const { url, authToken } = getTursoConfig();
+const schema = {
+  sessions,
+  publishers,
+  shopConfigs,
+  shopPublishers,
+  shopCustomTemplates,
+  shopCustomLogos,
+  shopBannerAssignments,
+};
 
-const client = createClient({
-  url,
-  authToken,
-});
+function createDatabase() {
+  const { url, authToken } = getTursoConfig();
+  const client = createClient({
+    url,
+    authToken,
+  });
 
-export const db = drizzle(client, {
-  schema: {
-    sessions,
-    publishers,
-    shopConfigs,
-    shopPublishers,
-    shopCustomTemplates,
-    shopCustomLogos,
-    shopBannerAssignments,
+  return drizzle(client, { schema });
+}
+
+type Database = ReturnType<typeof createDatabase>;
+
+let database: Database | undefined;
+
+function getDatabase(): Database {
+  if (!database) {
+    database = createDatabase();
+  }
+
+  return database;
+}
+
+export const db = new Proxy({} as Database, {
+  get(_target, property, receiver) {
+    const value = Reflect.get(getDatabase(), property, receiver);
+    if (typeof value === "function") {
+      return value.bind(getDatabase());
+    }
+
+    return value;
   },
 });

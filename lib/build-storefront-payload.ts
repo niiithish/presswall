@@ -28,11 +28,10 @@ export function buildStorefrontPayload(
 
   return {
     ...config,
-    publishers: resolveStorefrontPublishers(
-      catalog,
-      hydratedSelections,
-      options
-    ),
+    publishers: resolveStorefrontPublishers(catalog, hydratedSelections, {
+      ...options,
+      absoluteLogoUrls: true,
+    }),
   };
 }
 

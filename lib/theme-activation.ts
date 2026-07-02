@@ -239,10 +239,26 @@ export async function getThemeActivationStatus(
   );
 
   if (!response.ok) {
+    const errorBody = await response.text().catch(() => "");
+    console.error("Presswall theme activation GraphQL failed", {
+      shop,
+      status: response.status,
+      body: errorBody.slice(0, 500),
+    });
     return inactive;
   }
 
-  const payload = (await response.json()) as ThemeFilesQueryResult;
+  const payload = (await response.json()) as ThemeFilesQueryResult & {
+    errors?: Array<{ message: string }>;
+  };
+
+  if (payload.errors?.length) {
+    console.error("Presswall theme activation GraphQL errors", {
+      shop,
+      errors: payload.errors.map((error) => error.message),
+    });
+    return inactive;
+  }
   const theme = payload.data?.themes?.nodes?.[0];
 
   if (!theme) {

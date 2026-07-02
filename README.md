@@ -47,6 +47,17 @@ bun run db:studio
 
 Without Turso env vars, the app falls back to a local `file:data/dev.db` SQLite file for development.
 
+## Production
+
+Live at **https://presswall.noxify.io** (Debian VPS on AWS EC2, Docker + Caddy, Turso DB).
+
+- **Dev Shopify config:** `shopify.app.toml` (ngrok tunnel)
+- **Prod Shopify config:** `shopify.app.prod.toml` — use `shopify app config use prod` before deploy
+- **Redeploy container:** `VPS_IP=35.169.154.151 SHOPIFY_APP_URL=https://presswall.noxify.io bash scripts/update-vps-container.sh`
+- **Agent/deploy details:** see [`AGENTS.md`](./AGENTS.md) (architecture, auth tokens, troubleshooting)
+
+Copy `.env.production.example` for production env var names.
+
 ## Theme block
 
 After saving in the app admin:

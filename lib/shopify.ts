@@ -3,22 +3,47 @@ import { ApiVersion, shopifyApi } from "@shopify/shopify-api";
 import { getAppUrl } from "@/lib/app-url";
 import { sessionStorage } from "@/lib/session-storage";
 
-const appUrl = getAppUrl();
-const apiKey = process.env.SHOPIFY_API_KEY ?? "";
-const apiSecret = process.env.SHOPIFY_API_SECRET ?? "";
-const hostName = appUrl.replace(/^https?:\/\//, "");
-const hostScheme = appUrl.startsWith("https") ? "https" : "http";
-const scopes = (process.env.SCOPES ?? "").split(",").filter(Boolean);
+function createShopifyClient() {
+  const appUrl = getAppUrl();
+  const apiKey = process.env.SHOPIFY_API_KEY ?? "";
+  const apiSecret = process.env.SHOPIFY_API_SECRET ?? "";
+  const hostName = appUrl.replace(/^https?:\/\//, "");
+  const hostScheme = appUrl.startsWith("https") ? "https" : "http";
+  const scopes = (process.env.SCOPES ?? "").split(",").filter(Boolean);
 
-export const shopify = shopifyApi({
-  apiKey,
-  apiSecretKey: apiSecret,
-  scopes,
-  hostName,
-  hostScheme,
-  apiVersion: ApiVersion.January25,
-  isEmbeddedApp: true,
-  sessionStorage,
+  return shopifyApi({
+    apiKey,
+    apiSecretKey: apiSecret,
+    scopes,
+    hostName,
+    hostScheme,
+    apiVersion: ApiVersion.January25,
+    isEmbeddedApp: true,
+    sessionStorage,
+  });
+}
+
+type ShopifyClient = ReturnType<typeof createShopifyClient>;
+
+let shopifyClient: ShopifyClient | undefined;
+
+function getShopifyClient(): ShopifyClient {
+  if (!shopifyClient) {
+    shopifyClient = createShopifyClient();
+  }
+
+  return shopifyClient;
+}
+
+export const shopify = new Proxy({} as ShopifyClient, {
+  get(_target, property, receiver) {
+    const value = Reflect.get(getShopifyClient(), property, receiver);
+    if (typeof value === "function") {
+      return value.bind(getShopifyClient());
+    }
+
+    return value;
+  },
 });
 
 export function getSessionIdForShop(shop: string): string {
