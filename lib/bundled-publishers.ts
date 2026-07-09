@@ -480,25 +480,11 @@ export const BUNDLED_PUBLISHERS: BundledPublisher[] = [
     sortOrder: 100,
   },
   {
-    id: "food-and-wine",
-    name: "Food & Wine",
-    category: "Food",
-    websiteUrl: "https://foodandwine.com",
-    sortOrder: 101,
-  },
-  {
     id: "eater",
     name: "Eater",
     category: "Food",
     websiteUrl: "https://eater.com",
     sortOrder: 102,
-  },
-  {
-    id: "allure",
-    name: "Allure",
-    category: "Beauty",
-    websiteUrl: "https://allure.com",
-    sortOrder: 110,
   },
   {
     id: "byrdie",
