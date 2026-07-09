@@ -257,8 +257,8 @@
 }
 
 :root {
-  /* Soft canvas so white cards + logo tiles keep clear contrast */
-  --background: oklch(0.955 0.004 286);
+  /* Shopify admin canvas gray — cards stay pure white for elevation */
+  --background: #ebebeb;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
