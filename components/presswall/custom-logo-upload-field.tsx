@@ -1,6 +1,6 @@
 "use client";
 
-import { IconPhotoUp, IconX } from "@tabler/icons-react";
+import { IconUpload, IconX } from "@tabler/icons-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -131,7 +131,7 @@ export function CustomLogoUploadField({
           onClick={() => fileInputRef.current?.click()}
           type="button"
         >
-          <IconPhotoUp className="size-5 text-muted-foreground" stroke={1.75} />
+          <IconUpload className="size-5 text-muted-foreground" stroke={1.75} />
           <span className="font-medium text-sm">Choose PNG</span>
           <span className="text-muted-foreground text-xs">
             Transparent background works best
