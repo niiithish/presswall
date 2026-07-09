@@ -14,7 +14,7 @@ export interface TemplateDefinition {
   textColor: string;
 }
 
-/** Four logos with generous spacing in the video. */
+/** Four logos with generous spacing in template previews. */
 export const SHOWCASE_PUBLISHERS = [
   "forbes",
   "techcrunch",
@@ -70,3 +70,18 @@ export const TEMPLATES: TemplateDefinition[] = [
     logoSpacing: "space-between",
   },
 ];
+
+export const FEATURES = [
+  {
+    title: "Pick outlets",
+    body: "90+ publishers — or upload your own logos",
+  },
+  {
+    title: "Style the strip",
+    body: "Templates, colors, layout, and marquee speed",
+  },
+  {
+    title: "Go live",
+    body: "Theme app embed — live on your storefront",
+  },
+] as const;

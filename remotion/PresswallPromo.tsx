@@ -1,159 +1,133 @@
 import {
   AbsoluteFill,
+  Audio,
   interpolate,
   Sequence,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
+  staticFile,
 } from "remotion";
+import { BrandIntro } from "./components/BrandIntro";
 import { ChoiceHeader } from "./components/ChoiceHeader";
 import { CtaScreen } from "./components/CtaScreen";
 import { DashboardClip } from "./components/DashboardClip";
-import { OfficialLogo } from "./components/OfficialLogo";
+import { FeaturesScene } from "./components/FeaturesScene";
+import { HookScene } from "./components/HookScene";
 import { TemplateCard } from "./components/TemplateStrip";
 import { GEIST_FONT } from "./fonts";
 import { TEMPLATES } from "./template-data";
 import { DASHBOARD_VIDEO_FRAMES } from "./video-config";
 
-export const FPS = 60;
-
-const INTRO_END = 80;
-const CHOICE_START = INTRO_END;
-const CHOICE_END = CHOICE_START + 90;
-const TEMPLATE_START = CHOICE_END;
+/**
+ * Timeline (60 fps)
+ *
+ *  Hook          0 – 150     (2.5s)  problem statement
+ *  Brand       150 – 270     (2.0s)  logo + name
+ *  Features    270 – 480     (3.5s)  3-step value props
+ *  Choice      480 – 570     (1.5s)  templates teaser
+ *  Templates   570 – 1050    (8.0s)  4 templates × 2s
+ *  Dashboard  1050 – 2486   (23.9s)  screen recording
+ *  CTA        2486 – 2726    (4.0s)  install CTA
+ */
+const HOOK = 150;
+const BRAND = 120;
+const FEATURES = 210;
+const CHOICE = 90;
 const TEMPLATE_SLOT = 120;
-const TEMPLATES_END = TEMPLATE_START + TEMPLATES.length * TEMPLATE_SLOT;
-const CUSTOM_START = TEMPLATES_END;
-const CUSTOM_END = CUSTOM_START + DASHBOARD_VIDEO_FRAMES;
-const CTA_START = CUSTOM_END;
-const CTA_DURATION = 240;
+const TEMPLATES_TOTAL = TEMPLATES.length * TEMPLATE_SLOT;
+const CTA = 240;
 
-function IntroScene() {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+const HOOK_START = 0;
+const BRAND_START = HOOK_START + HOOK;
+const FEATURES_START = BRAND_START + BRAND;
+const CHOICE_START = FEATURES_START + FEATURES;
+const TEMPLATES_START = CHOICE_START + CHOICE;
+const DASHBOARD_START = TEMPLATES_START + TEMPLATES_TOTAL;
+const CTA_START = DASHBOARD_START + DASHBOARD_VIDEO_FRAMES;
 
-  const logoScale = spring({
-    fps,
+export const PROMO_DURATION_FRAMES = CTA_START + CTA;
+
+/** Background music under dialogue-free promo (0–1). */
+const BG_MUSIC_VOLUME = 0.28;
+const BG_MUSIC_FADE_IN_FRAMES = 60; // 1.0s
+const BG_MUSIC_FADE_OUT_FRAMES = 90; // 1.5s
+
+function bgMusicVolume(frame: number): number {
+  return interpolate(
     frame,
-    config: { damping: 10, mass: 0.35, stiffness: 280 },
-  });
-
-  const taglineOpacity = interpolate(frame, [16, 32], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const taglineY = interpolate(frame, [16, 32], [16, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const sceneOpacity = interpolate(frame, [INTRO_END - 14, INTRO_END], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  if (frame >= INTRO_END) {
-    return null;
-  }
-
-  return (
-    <AbsoluteFill
-      style={{
-        alignItems: "center",
-        background: "#ffffff",
-        display: "flex",
-        flexDirection: "column",
-        fontFamily: GEIST_FONT,
-        justifyContent: "center",
-        opacity: sceneOpacity,
-      }}
-    >
-      <div style={{ transform: `scale(${logoScale})` }}>
-        <OfficialLogo height={140} variant="dark" />
-      </div>
-      <p
-        style={{
-          color: "#444",
-          fontSize: 34,
-          fontWeight: 500,
-          margin: "24px 0 0",
-          opacity: taglineOpacity,
-          transform: `translateY(${taglineY}px)`,
-        }}
-      >
-        &ldquo;As seen on&rdquo; press strips for Shopify
-      </p>
-    </AbsoluteFill>
-  );
-}
-
-function TemplatesScene() {
-  const frame = useCurrentFrame();
-
-  if (frame < CHOICE_START || frame >= CUSTOM_START) {
-    return null;
-  }
-
-  return (
-    <AbsoluteFill style={{ background: "#fafafa", fontFamily: GEIST_FONT }}>
-      <ChoiceHeader endFrame={CHOICE_END} startFrame={CHOICE_START} />
-      {TEMPLATES.map((template, index) => {
-        const enterFrame = TEMPLATE_START + index * TEMPLATE_SLOT;
-        const exitFrame = enterFrame + TEMPLATE_SLOT;
-
-        return (
-          <AbsoluteFill key={template.id}>
-            <TemplateCard
-              enterFrame={enterFrame}
-              exitFrame={exitFrame}
-              template={template}
-            />
-          </AbsoluteFill>
-        );
-      })}
-    </AbsoluteFill>
-  );
-}
-
-function CustomScene() {
-  return (
-    <Sequence
-      durationInFrames={DASHBOARD_VIDEO_FRAMES}
-      from={CUSTOM_START}
-    >
-      <AbsoluteFill style={{ background: "#fafafa", fontFamily: GEIST_FONT }}>
-        <DashboardClip />
-      </AbsoluteFill>
-    </Sequence>
-  );
-}
-
-function CtaScene() {
-  const frame = useCurrentFrame();
-
-  if (frame < CTA_START) {
-    return null;
-  }
-
-  return (
-    <AbsoluteFill>
-      <CtaScreen
-        endFrame={CTA_START + CTA_DURATION}
-        startFrame={CTA_START}
-      />
-    </AbsoluteFill>
+    [
+      0,
+      BG_MUSIC_FADE_IN_FRAMES,
+      PROMO_DURATION_FRAMES - BG_MUSIC_FADE_OUT_FRAMES,
+      PROMO_DURATION_FRAMES,
+    ],
+    [0, BG_MUSIC_VOLUME, BG_MUSIC_VOLUME, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
 }
 
 export function PresswallPromo() {
   return (
     <AbsoluteFill style={{ background: "#0a0a0a", fontFamily: GEIST_FONT }}>
-      <IntroScene />
-      <TemplatesScene />
-      <CustomScene />
-      <CtaScene />
+      <Audio src={staticFile("audio/bg-music.mp3")} volume={bgMusicVolume} />
+
+      {/* 1. Hook — press logos + problem statement */}
+      <Sequence durationInFrames={HOOK} from={HOOK_START} name="Hook">
+        <HookScene durationInFrames={HOOK} />
+      </Sequence>
+
+      {/* 2. Brand intro */}
+      <Sequence durationInFrames={BRAND} from={BRAND_START} name="Brand">
+        <BrandIntro durationInFrames={BRAND} />
+      </Sequence>
+
+      {/* 3. How it works */}
+      <Sequence
+        durationInFrames={FEATURES}
+        from={FEATURES_START}
+        name="Features"
+      >
+        <FeaturesScene durationInFrames={FEATURES} />
+      </Sequence>
+
+      {/* 4. Templates teaser */}
+      <Sequence durationInFrames={CHOICE} from={CHOICE_START} name="Choice">
+        <AbsoluteFill style={{ background: "#fafafa" }}>
+          <ChoiceHeader durationInFrames={CHOICE} />
+        </AbsoluteFill>
+      </Sequence>
+
+      {/* 5. Template showcase — hard cuts, one per slot */}
+      {TEMPLATES.map((template, index) => {
+        const from = TEMPLATES_START + index * TEMPLATE_SLOT;
+        return (
+          <Sequence
+            key={template.id}
+            durationInFrames={TEMPLATE_SLOT}
+            from={from}
+            name={`Template-${template.id}`}
+          >
+            <AbsoluteFill style={{ background: "#fafafa" }}>
+              <TemplateCard
+                durationInFrames={TEMPLATE_SLOT}
+                template={template}
+              />
+            </AbsoluteFill>
+          </Sequence>
+        );
+      })}
+
+      {/* 6. Dashboard screen recording */}
+      <Sequence
+        durationInFrames={DASHBOARD_VIDEO_FRAMES}
+        from={DASHBOARD_START}
+        name="Dashboard"
+      >
+        <DashboardClip />
+      </Sequence>
+
+      {/* 7. CTA */}
+      <Sequence durationInFrames={CTA} from={CTA_START} name="CTA">
+        <CtaScreen durationInFrames={CTA} />
+      </Sequence>
     </AbsoluteFill>
   );
 }
-
-export const PROMO_DURATION_FRAMES = CTA_START + CTA_DURATION;

@@ -1,11 +1,11 @@
-import { Img, interpolate, staticFile, useCurrentFrame } from "remotion";
+import { Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { GEIST_FONT } from "../fonts";
 import { getPublisherLogoStyle } from "../logo-style";
 import { SHOWCASE_PUBLISHERS, type TemplateDefinition } from "../template-data";
 
-const LOGO_HEIGHT = 44;
-const LOGO_MAX_WIDTH = 160;
-const CONTENT_MAX_WIDTH = 760;
+const LOGO_HEIGHT = 48;
+const LOGO_MAX_WIDTH = 170;
+const CONTENT_MAX_WIDTH = 820;
 
 function PublisherLogo({
   id,
@@ -47,7 +47,7 @@ function BarLogos({ template }: { template: TemplateDefinition }) {
             flex: 1,
             justifyContent: "center",
             minWidth: 0,
-            padding: "0 12px",
+            padding: "0 14px",
           }}
         >
           <PublisherLogo id={id} template={template} />
@@ -99,6 +99,7 @@ function MarqueeLogos({
 export function TemplateStrip({ template }: { template: TemplateDefinition }) {
   const isMarquee = template.layout === "marquee";
   const usesInlineHeading = isMarquee && template.headingAlignment === "left";
+  const isDark = template.backgroundColor === "#0a0a0a";
 
   return (
     <div
@@ -109,15 +110,19 @@ export function TemplateStrip({ template }: { template: TemplateDefinition }) {
             : template.backgroundColor,
         border:
           template.backgroundColor === "transparent"
-            ? "1px solid #e5e5e5"
-            : "none",
-        borderRadius: 16,
-        boxShadow: "0 20px 60px rgba(0,0,0,0.08)",
+            ? "1px solid #e8e8e8"
+            : isDark
+              ? "1px solid #222"
+              : "none",
+        borderRadius: 20,
+        boxShadow: isDark
+          ? "0 28px 80px rgba(0,0,0,0.35)"
+          : "0 24px 70px rgba(0,0,0,0.1)",
         margin: "0 auto",
-        maxWidth: 1200,
+        maxWidth: 1240,
         overflow: "hidden",
-        padding: "40px 56px",
-        width: "90%",
+        padding: "48px 64px",
+        width: "88%",
       }}
     >
       {usesInlineHeading ? (
@@ -127,9 +132,9 @@ export function TemplateStrip({ template }: { template: TemplateDefinition }) {
               color: template.textColor,
               flexShrink: 0,
               fontFamily: GEIST_FONT,
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: 600,
-              letterSpacing: "0.1em",
+              letterSpacing: "0.12em",
               margin: 0,
               textTransform: "uppercase",
               whiteSpace: "nowrap",
@@ -145,10 +150,10 @@ export function TemplateStrip({ template }: { template: TemplateDefinition }) {
             style={{
               color: template.textColor,
               fontFamily: GEIST_FONT,
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: 600,
-              letterSpacing: "0.1em",
-              margin: "0 0 32px",
+              letterSpacing: "0.12em",
+              margin: "0 0 36px",
               textAlign: template.headingAlignment,
               textTransform: "uppercase",
             }}
@@ -165,29 +170,31 @@ export function TemplateStrip({ template }: { template: TemplateDefinition }) {
 }
 
 export function TemplateCard({
-  enterFrame,
-  exitFrame,
+  durationInFrames,
   template,
 }: {
-  enterFrame: number;
-  exitFrame: number;
+  durationInFrames: number;
   template: TemplateDefinition;
 }) {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
-  if (frame < enterFrame || frame >= exitFrame) {
-    return null;
-  }
+  const enter = spring({
+    fps,
+    frame,
+    config: { damping: 16, mass: 0.4, stiffness: 200 },
+  });
 
-  const localFrame = frame - enterFrame;
-  const popScale = interpolate(localFrame, [0, 8], [0.97, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const labelY = interpolate(localFrame, [0, 10], [10, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  const fadeOut = interpolate(
+    frame,
+    [durationInFrames - 10, durationInFrames],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+  );
+
+  const labelY = interpolate(enter, [0, 1], [16, 0]);
+  const stripY = interpolate(enter, [0, 1], [28, 0]);
+  const scale = 0.96 + enter * 0.04;
 
   return (
     <div
@@ -195,10 +202,11 @@ export function TemplateCard({
         alignItems: "center",
         display: "flex",
         flexDirection: "column",
-        gap: 28,
+        gap: 32,
         height: "100%",
         justifyContent: "center",
-        transform: `scale(${popScale})`,
+        opacity: fadeOut,
+        transform: `scale(${scale})`,
         width: "100%",
       }}
     >
@@ -207,23 +215,23 @@ export function TemplateCard({
           style={{
             color: "#888",
             fontFamily: GEIST_FONT,
-            fontSize: 18,
-            fontWeight: 500,
-            letterSpacing: "0.14em",
-            margin: "0 0 8px",
+            fontSize: 16,
+            fontWeight: 600,
+            letterSpacing: "0.16em",
+            margin: "0 0 10px",
             textAlign: "center",
             textTransform: "uppercase",
           }}
         >
-          Ready-made
+          Template
         </p>
         <h2
           style={{
             color: "#111",
             fontFamily: GEIST_FONT,
-            fontSize: 52,
+            fontSize: 56,
             fontWeight: 800,
-            letterSpacing: "-0.02em",
+            letterSpacing: "-0.03em",
             margin: 0,
             textAlign: "center",
           }}
@@ -231,7 +239,9 @@ export function TemplateCard({
           {template.name}
         </h2>
       </div>
-      <TemplateStrip template={template} />
+      <div style={{ transform: `translateY(${stripY}px)`, width: "100%" }}>
+        <TemplateStrip template={template} />
+      </div>
     </div>
   );
 }

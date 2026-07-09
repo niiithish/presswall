@@ -2,34 +2,27 @@ import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { GEIST_FONT } from "../fonts";
 
 export function ChoiceHeader({
-  endFrame,
-  startFrame,
+  durationInFrames,
 }: {
-  endFrame: number;
-  startFrame: number;
+  durationInFrames: number;
 }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  if (frame < startFrame || frame >= endFrame) {
-    return null;
-  }
-
-  const localFrame = frame - startFrame;
   const opacity = interpolate(
     frame,
-    [startFrame, startFrame + 10, endFrame - 8, endFrame],
+    [0, 10, durationInFrames - 10, durationInFrames],
     [0, 1, 1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
 
   const titleScale = spring({
     fps,
-    frame: localFrame,
-    config: { damping: 10, mass: 0.35, stiffness: 300 },
+    frame,
+    config: { damping: 12, mass: 0.35, stiffness: 220 },
   });
 
-  const subtitleOpacity = interpolate(localFrame, [14, 28], [0, 1], {
+  const subtitleOpacity = interpolate(frame, [16, 30], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -51,14 +44,14 @@ export function ChoiceHeader({
       <p
         style={{
           color: "#888",
-          fontSize: 20,
-          fontWeight: 500,
-          letterSpacing: "0.16em",
+          fontSize: 18,
+          fontWeight: 600,
+          letterSpacing: "0.18em",
           margin: "0 0 20px",
           textTransform: "uppercase",
         }}
       >
-        Get started fast
+        Start in seconds
       </p>
       <h2
         style={{
@@ -67,7 +60,7 @@ export function ChoiceHeader({
           fontWeight: 800,
           letterSpacing: "-0.03em",
           lineHeight: 1.1,
-          margin: "0 0 24px",
+          margin: "0 0 20px",
           transform: `scale(${titleScale})`,
         }}
       >
@@ -76,13 +69,13 @@ export function ChoiceHeader({
       <p
         style={{
           color: "#555",
-          fontSize: 32,
+          fontSize: 30,
           fontWeight: 500,
           margin: 0,
           opacity: subtitleOpacity,
         }}
       >
-        — or create your own —
+        — or build a fully custom strip —
       </p>
     </div>
   );

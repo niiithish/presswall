@@ -1,8 +1,23 @@
 # Presswall promo video
 
-A short Remotion video for the Shopify App Store listing.
+Remotion composition for the Shopify App Store listing.
 
-**Specs:** 1920×1080, 60 fps, ~38 seconds (dashboard recording + CTA).
+**Specs:** 1920×1080 · 60 fps · ~45 seconds
+
+## Scenes
+
+| # | Scene | Duration | What it shows |
+|---|-------|----------|---------------|
+| 1 | Hook | 2.5s | Scrolling press logos + “Shoppers trust brands…” |
+| 2 | Brand | 2.0s | Official logo + “Presswall” |
+| 3 | Features | 3.5s | Pick outlets → Style → Go live |
+| 4 | Choice | 1.5s | “4 ready-made templates” |
+| 5 | Templates | 8.0s | Classic, Dark band, Auto-scroll, Soft card |
+| 6 | Dashboard | ~24s | Screen recording (`public/video/video.mp4`) |
+| 7 | CTA | 4.0s | “Get started free” |
+
+Assets are symlinked from the main app into `remotion/public/`:
+`brand/`, `publishers/`, `video/`.
 
 ## Preview
 
@@ -12,7 +27,7 @@ bun install
 bun run dev
 ```
 
-Opens Remotion Studio at `http://localhost:3000`.
+Opens Remotion Studio (default `http://localhost:3000`).
 
 ## Render MP4
 
@@ -25,22 +40,19 @@ Output: `remotion/out/presswall-promo.mp4`
 
 Requires [FFmpeg](https://ffmpeg.org/) on your PATH.
 
-## Scenes
-
-1. **Intro** — official Presswall logo + tagline
-2. **Choice** — “4 ready-made templates — or create your own”
-3. **Templates** — hard cuts through Classic, Dark band, Auto-scroll, Soft card
-4. **Custom** — dashboard screen recording (`public/video/video.mp4`)
-5. **CTA** — install call-to-action screen
-
-Assets symlinked from the main app: `public/brand/`, `public/publishers/`, and `public/video/`.
-
-The dashboard clip is wrapped in a Remotion `<Sequence>` so `OffthreadVideo` starts at frame 0 of the source file (not the global composition timeline).
-
-## Add music
-
-Drop your track into Remotion Studio or mux after render:
+## GIF (optional, heavier)
 
 ```bash
-ffmpeg -i out/presswall-promo.mp4 -i your-track.mp3 -c:v copy -c:a aac -shortest out/presswall-promo-with-music.mp4
+bun run render:gif
 ```
+
+## Background music
+
+Track lives at `public/audio/bg-music.mp3` and is mixed in `PresswallPromo.tsx`
+(`BG_MUSIC_VOLUME`, fade in/out). Dashboard screen recording is muted so only
+the bed plays.
+
+## Notes
+
+- The dashboard clip sits in its own `<Sequence>` so `OffthreadVideo` starts at source frame 0.
+- Update `DASHBOARD_VIDEO_FRAMES` in `video-config.ts` if you replace the recording (`ffprobe` → `nb_frames`).
