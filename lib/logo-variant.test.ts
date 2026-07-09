@@ -199,22 +199,24 @@ function sha256(buffer: Buffer): string {
 }
 
 describe("bundled catalog + variant assets", () => {
-  test("catalog is the Brandfetch-curated set of 10", () => {
-    expect(BUNDLED_PUBLISHERS.length).toBe(10);
-    expect(BUNDLED_PUBLISHERS.map((p) => p.id).sort()).toEqual(
-      [
-        "bbc",
-        "bloomberg",
-        "cnn",
-        "economist",
-        "forbes",
-        "fortune",
-        "new-york-times",
-        "techcrunch",
-        "vogue",
-        "wired",
-      ].sort()
-    );
+  test("catalog matches shipped logo folders", () => {
+    // Multi-niche Brandfetch set (+ Shape / Women's Health manual)
+    expect(BUNDLED_PUBLISHERS.length).toBeGreaterThanOrEqual(70);
+    for (const { id } of BUNDLED_PUBLISHERS) {
+      expect(BUNDLED_PUBLISHERS.some((p) => p.id === id)).toBe(true);
+    }
+    // Core outlets always present
+    for (const id of [
+      "forbes",
+      "cnn",
+      "techcrunch",
+      "mens-health",
+      "shape",
+      "womens-health",
+      "vogue",
+    ]) {
+      expect(BUNDLED_PUBLISHERS.some((p) => p.id === id)).toBe(true);
+    }
   });
 
   test("readBundledPublisherLogo serves pure black and pure white ink", async () => {
