@@ -100,6 +100,9 @@ describe("legacy mono + dark background migration", () => {
 
 describe("bundledLogoPath", () => {
   test("includes variant query from colorMode", () => {
+    expect(bundledLogoPath("forbes")).toBe(
+      "/api/publishers/forbes/logo?variant=color"
+    );
     expect(bundledLogoPath("forbes", { colorMode: "color" })).toBe(
       "/api/publishers/forbes/logo?variant=color"
     );
@@ -249,4 +252,91 @@ describe("bundled catalog + variant assets", () => {
       expect(means.r + means.g + means.b).toBeGreaterThan(0.05);
     }
   });
+
+  test("economist is not the New Yorker mark (wrong-brand regression)", async () => {
+    const economist = await readBundledPublisherLogo("economist", "color");
+    const newYorker = await readBundledPublisherLogo("new-yorker", "color");
+    expect(economist).not.toBeNull();
+    expect(newYorker).not.toBeNull();
+    // Shipped color assets must be distinct files (was previously New Yorker on economist)
+    expect(sha256(economist!.body)).not.toBe(sha256(newYorker!.body));
+    // Economist red-box brand has significant red channel in opaque ink
+    const means = await opaqueChannelMeans(
+      "public/publishers/logos/economist/color.png"
+    );
+    expect(means.r).toBeGreaterThan(means.g + 0.15);
+    expect(means.r).toBeGreaterThan(means.b + 0.15);
+  });
+
+  test("previously multi-logo outlets serve distinct single color assets", async () => {
+    // These were multi-logo packs or wrong brands; each must still resolve via shipped path
+    for (const id of ["wired", "mashable", "variety", "venturebeat"]) {
+      const color = await readBundledPublisherLogo(id, "color");
+      const black = await readBundledPublisherLogo(id, "black");
+      expect(color).not.toBeNull();
+      expect(black).not.toBeNull();
+      expect(color!.body.byteLength).toBeGreaterThan(400);
+      expect(black!.body.byteLength).toBeGreaterThan(400);
+    }
+  });
+
+  test("fixed mono variants are logo ink on transparent (not solid fills)", async () => {
+    // Regression: solid white/black rectangles (alpha≈1, no glyph structure)
+    // after multi-logo repair for economist/mashable/npr.
+    for (const id of ["economist", "mashable", "npr"]) {
+      const black = await readBundledPublisherLogo(id, "black");
+      const white = await readBundledPublisherLogo(id, "white");
+      expect(black).not.toBeNull();
+      expect(white).not.toBeNull();
+
+      const blackPath = `public/publishers/logos/${id}/black.png`;
+      const whitePath = `public/publishers/logos/${id}/white.png`;
+
+      // Pure ink among opaque pixels
+      expect(await opaqueInkMean(blackPath)).toBeLessThan(0.02);
+      expect(await opaqueInkMean(whitePath)).toBeGreaterThan(0.98);
+
+      // Partial transparency = actual glyph shape, not a filled box
+      const blackAlpha = await alphaMean(blackPath);
+      const whiteAlpha = await alphaMean(whitePath);
+      expect(blackAlpha).toBeGreaterThan(0.02);
+      expect(blackAlpha).toBeLessThan(0.95);
+      expect(whiteAlpha).toBeGreaterThan(0.02);
+      expect(whiteAlpha).toBeLessThan(0.95);
+      // black and white share the same alpha mask
+      expect(Math.abs(blackAlpha - whiteAlpha)).toBeLessThan(0.02);
+    }
+  });
 });
+
+async function alphaMean(filePath: string): Promise<number> {
+  const { spawn } = await import("node:child_process");
+  const out = await new Promise<string>((resolve, reject) => {
+    const proc = spawn(
+      "bash",
+      [
+        "-c",
+        `magick "$1" -alpha extract -format '%[fx:mean]' info:`,
+        "magick-alpha",
+        filePath,
+      ],
+      { stdio: ["ignore", "pipe", "pipe"] }
+    );
+    let stdout = "";
+    let stderr = "";
+    proc.stdout.on("data", (chunk: Buffer) => {
+      stdout += chunk.toString();
+    });
+    proc.stderr.on("data", (chunk: Buffer) => {
+      stderr += chunk.toString();
+    });
+    proc.on("close", (code) => {
+      if (code === 0) {
+        resolve(stdout);
+      } else {
+        reject(new Error(`magick failed (${code}): ${stderr || stdout}`));
+      }
+    });
+  });
+  return Number.parseFloat(out.trim());
+}

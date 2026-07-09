@@ -55,7 +55,7 @@ export default function RootLayout({
       <body>
         <PresswallAppNav />
         <SessionBootstrap />
-        <TooltipProvider>
+        <TooltipProvider delay={400}>
           {children}
           <Toaster richColors />
         </TooltipProvider>

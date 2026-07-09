@@ -21,7 +21,8 @@ function resolveVariant(options?: BundledLogoPathOptions): LogoVariant {
   if (options?.colorMode) {
     return logoVariantForColorMode(options.colorMode);
   }
-  return "black";
+  // Default to color assets when no mode is specified (library / previews).
+  return "color";
 }
 
 /** Bundled logo URL — variant selected via query string. */

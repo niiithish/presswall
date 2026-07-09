@@ -3,6 +3,7 @@
 import { OnboardingActions } from "@/components/presswall/onboarding-actions";
 import { OutletLibraryPanel } from "@/components/presswall/outlet-library-panel";
 import type { PresswallEditor } from "@/hooks/use-presswall-editor";
+import type { PresswallConfig } from "@/lib/presswall-types";
 
 interface OnboardingOutletsStepProps {
   editor: PresswallEditor;
@@ -24,7 +25,15 @@ export function OnboardingOutletsStep({
       <div className="flex min-h-0 flex-1 flex-col rounded-xl border bg-card p-4 shadow-sm">
         <OutletLibraryPanel
           catalog={editor.catalog}
+          colorMode={editor.config.colorMode}
+          columns={3}
           customLogos={editor.customLogos}
+          onColorModeChange={(value) =>
+            editor.updateConfig(
+              "colorMode",
+              value as PresswallConfig["colorMode"]
+            )
+          }
           onDeleteCustom={(logoId) => {
             editor.deleteCustomLogo(logoId);
           }}

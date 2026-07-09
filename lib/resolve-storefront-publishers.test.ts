@@ -30,7 +30,7 @@ describe("resolveStorefrontPublishers", () => {
       logoSvg: "",
     });
     expect(publishers[0]?.logoImageUrl).toBe(
-      "/api/publishers/techcrunch/logo?variant=black"
+      "/api/publishers/techcrunch/logo?variant=color"
     );
   });
 

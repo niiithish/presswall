@@ -91,7 +91,14 @@ export function EditorWorkspace({ editor }: EditorWorkspaceProps) {
                 <div className="p-3">
                   <OutletLibraryPanel
                     catalog={editor.catalog}
+                    colorMode={editor.config.colorMode}
                     customLogos={editor.customLogos}
+                    onColorModeChange={(value) =>
+                      editor.updateConfig(
+                        "colorMode",
+                        value as PresswallConfig["colorMode"]
+                      )
+                    }
                     onDeleteCustom={editor.deleteCustomLogo}
                     onToggle={editor.togglePublisher}
                     onToggleCustom={editor.toggleCustomLogo}

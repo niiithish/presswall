@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 
 interface PublisherLogoProps {
   className?: string;
+  /** Strip colorMode — selects color/black/white logo asset for bundled marks. */
+  colorMode?: string | null;
   customLogoSvg?: string;
   logoImageUrl?: string | null;
   name: string;
@@ -42,6 +44,7 @@ export function PublisherLogo({
   logoImageUrl,
   name,
   customLogoSvg,
+  colorMode,
   className,
   style,
 }: PublisherLogoProps) {
@@ -73,7 +76,7 @@ export function PublisherLogo({
   const logoUrl =
     logoImageUrl ??
     (publisherId && isBundledPublisherId(publisherId)
-      ? bundledLogoPath(publisherId)
+      ? bundledLogoPath(publisherId, { colorMode })
       : null);
 
   if (!logoUrl || failed) {

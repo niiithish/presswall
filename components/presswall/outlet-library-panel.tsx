@@ -1,7 +1,7 @@
 "use client";
 
 import { IconPhotoUp, IconSearch, IconTrash } from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { CustomOutletForm } from "@/components/presswall/custom-outlet-form";
 import { PublisherLogo } from "@/components/presswall/publisher-logo";
 import { Button } from "@/components/ui/button";
@@ -27,11 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { LOGO_GUIDANCE } from "@/lib/logo-guidance";
 import type {
   PublisherCatalogItem,
@@ -44,7 +39,12 @@ import { cn } from "@/lib/utils";
 interface OutletLibraryPanelProps {
   catalog: PublisherCatalogItem[];
   className?: string;
+  /** Logo color mode for bundled assets (color / black / white). Defaults to color. */
+  colorMode?: string | null;
+  /** Number of logo tiles per row. Defaults to 2 (editor sidebar). */
+  columns?: 2 | 3;
   customLogos: ShopCustomLogo[];
+  onColorModeChange?: (value: string) => void;
   onDeleteCustom: (logoId: string) => void;
   onToggle: (publisher: PublisherCatalogItem) => void;
   onToggleCustom: (logo: ShopCustomLogo) => void;
@@ -60,14 +60,24 @@ function PositionBadge({ position }: { position: number }) {
   );
 }
 
+const LOGO_COLOR_ITEMS = [
+  { value: "color", label: "Colorful" },
+  { value: "black", label: "Black" },
+  { value: "white", label: "White" },
+];
+
 function LibraryFilters({
   category,
+  colorMode,
   onCategoryChange,
+  onColorModeChange,
   onSearchChange,
   search,
 }: {
   category: string;
+  colorMode?: string | null;
   onCategoryChange: (value: string) => void;
+  onColorModeChange?: (value: string) => void;
   onSearchChange: (value: string) => void;
   search: string;
 }) {
@@ -87,6 +97,25 @@ function LibraryFilters({
           value={search}
         />
       </div>
+      {onColorModeChange ? (
+        <Select
+          items={LOGO_COLOR_ITEMS}
+          onValueChange={(value) => value && onColorModeChange(value)}
+          value={colorMode ?? "color"}
+        >
+          <SelectTrigger
+            aria-label="Logo color"
+            className="h-8 w-[7.5rem] shrink-0 py-0 text-xs data-[size=default]:h-8"
+          >
+            <SelectValue placeholder="Color" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="color">Colorful</SelectItem>
+            <SelectItem value="black">Black</SelectItem>
+            <SelectItem value="white">White</SelectItem>
+          </SelectContent>
+        </Select>
+      ) : null}
       <Select
         onValueChange={(value) => value && onCategoryChange(value)}
         value={category}
@@ -106,50 +135,69 @@ function LibraryFilters({
   );
 }
 
-function OutletTile({
+/**
+ * Dense logo grid: no React Tooltip portals (0-delay tooltips on 50 tiles
+ * open/close on every mouse move and feel laggy). Native title is delayed by
+ * the browser and has no portal cost; aria-label covers a11y.
+ */
+const OutletTile = memo(function OutletTile({
+  colorMode,
   name,
   onToggle,
   position,
   publisherId,
 }: {
+  colorMode?: string | null;
   name: string;
   onToggle: () => void;
   position: number | null;
   publisherId: string;
 }) {
   const selected = position !== null;
+  // White marks need a dark tile so they stay visible in the library.
+  const whiteOnDark = colorMode === "white";
+  let tileClass =
+    "relative flex h-10 items-center justify-center rounded-md border px-1.5 transition-colors";
+  if (whiteOnDark && selected) {
+    tileClass = cn(
+      tileClass,
+      "border-neutral-600 bg-neutral-900 ring-1 ring-neutral-500/50"
+    );
+  } else if (whiteOnDark) {
+    tileClass = cn(
+      tileClass,
+      "border-neutral-700 bg-neutral-900 hover:border-neutral-500"
+    );
+  } else if (selected) {
+    tileClass = cn(
+      tileClass,
+      "border-border bg-muted/30 ring-1 ring-border/60"
+    );
+  } else {
+    tileClass = cn(tileClass, "hover:border-border hover:bg-muted/20");
+  }
 
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <button
-            aria-label={name}
-            aria-pressed={selected}
-            className={cn(
-              "relative flex h-10 items-center justify-center rounded-md border px-1.5 transition-all",
-              selected
-                ? "border-border bg-muted/30 ring-1 ring-border/60"
-                : "hover:border-border hover:bg-muted/20"
-            )}
-            onClick={onToggle}
-            type="button"
-          >
-            <PublisherLogo
-              className="[--logo-height:0.9375rem] [--logo-max-width:5.5rem]"
-              name={name}
-              publisherId={publisherId}
-            />
-            {selected ? <PositionBadge position={position} /> : null}
-          </button>
-        }
+    <button
+      aria-label={name}
+      aria-pressed={selected}
+      className={tileClass}
+      onClick={onToggle}
+      title={name}
+      type="button"
+    >
+      <PublisherLogo
+        className="[--logo-height:0.9375rem] [--logo-max-width:5.5rem]"
+        colorMode={colorMode}
+        name={name}
+        publisherId={publisherId}
       />
-      <TooltipContent>{name}</TooltipContent>
-    </Tooltip>
+      {selected ? <PositionBadge position={position} /> : null}
+    </button>
   );
-}
+});
 
-function CustomLogoTile({
+const CustomLogoTile = memo(function CustomLogoTile({
   logo,
   onDelete,
   onToggle,
@@ -161,43 +209,32 @@ function CustomLogoTile({
   position: number | null;
 }) {
   const selected = position !== null;
+  const actionLabel = selected
+    ? `Remove ${logo.name} from press wall`
+    : `Add ${logo.name} to press wall`;
 
   return (
     <div className="flex items-stretch gap-1">
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <button
-              aria-label={
-                selected
-                  ? `Remove ${logo.name} from press wall`
-                  : `Add ${logo.name} to press wall`
-              }
-              aria-pressed={selected}
-              className={cn(
-                "relative flex h-10 min-w-0 flex-1 items-center justify-center rounded-md border px-1.5 transition-all",
-                selected
-                  ? "border-border bg-muted/30 ring-1 ring-border/60"
-                  : "hover:border-border hover:bg-muted/20"
-              )}
-              onClick={onToggle}
-              type="button"
-            >
-              <PublisherLogo
-                className="[--logo-height:0.9375rem] [--logo-max-width:5.5rem]"
-                customLogoSvg={logo.logoSvg}
-                name={logo.name}
-              />
-              {selected ? <PositionBadge position={position} /> : null}
-            </button>
-          }
+      <button
+        aria-label={actionLabel}
+        aria-pressed={selected}
+        className={cn(
+          "relative flex h-10 min-w-0 flex-1 items-center justify-center rounded-md border px-1.5 transition-colors",
+          selected
+            ? "border-border bg-muted/30 ring-1 ring-border/60"
+            : "hover:border-border hover:bg-muted/20"
+        )}
+        onClick={onToggle}
+        title={actionLabel}
+        type="button"
+      >
+        <PublisherLogo
+          className="[--logo-height:0.9375rem] [--logo-max-width:5.5rem]"
+          customLogoSvg={logo.logoSvg}
+          name={logo.name}
         />
-        <TooltipContent>
-          {selected
-            ? "Remove from press wall"
-            : "Add to press wall · saved in your library"}
-        </TooltipContent>
-      </Tooltip>
+        {selected ? <PositionBadge position={position} /> : null}
+      </button>
       <Button
         aria-label={`Delete ${logo.name} from library`}
         className="h-10 w-8 shrink-0 px-0 text-muted-foreground hover:text-destructive"
@@ -210,17 +247,21 @@ function CustomLogoTile({
       </Button>
     </div>
   );
-}
+});
 
 function OutletGrid({
   catalog,
   category,
+  colorMode,
+  columns,
   onToggle,
   search,
   selectionPositionByKey,
 }: {
   catalog: PublisherCatalogItem[];
   category: string;
+  colorMode?: string | null;
+  columns: 2 | 3;
   onToggle: (publisher: PublisherCatalogItem) => void;
   search: string;
   selectionPositionByKey: Map<string, number>;
@@ -253,9 +294,15 @@ function OutletGrid({
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border p-2">
-      <div className="grid grid-cols-2 gap-1.5">
+      <div
+        className={cn(
+          "grid gap-1.5",
+          columns === 3 ? "grid-cols-3" : "grid-cols-2"
+        )}
+      >
         {filteredCatalog.map((publisher) => (
           <OutletTile
+            colorMode={colorMode}
             key={publisher.id}
             name={publisher.name}
             onToggle={() => onToggle(publisher)}
@@ -270,8 +317,11 @@ function OutletGrid({
 
 export function OutletLibraryPanel({
   catalog,
+  colorMode = "color",
+  columns = 2,
   customLogos,
   selected,
+  onColorModeChange,
   onToggle,
   onToggleCustom,
   onUploadCustom,
@@ -360,13 +410,17 @@ export function OutletLibraryPanel({
         >
           <LibraryFilters
             category={category}
+            colorMode={colorMode}
             onCategoryChange={setCategory}
+            onColorModeChange={onColorModeChange}
             onSearchChange={setSearch}
             search={search}
           />
           <OutletGrid
             catalog={catalog}
             category={category}
+            colorMode={colorMode}
+            columns={columns}
             onToggle={onToggle}
             search={search}
             selectionPositionByKey={selectionPositionByKey}
