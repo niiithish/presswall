@@ -29,7 +29,6 @@ interface TemplatePickerProps {
   onApply: (templateId: PresswallTemplateId) => void;
   onApplyCustom: (templateId: string) => void;
   onCustomize?: () => void;
-  onGoToPlacement?: () => void;
   selections: PresswallEditor["selections"];
 }
 
@@ -174,22 +173,10 @@ export function TemplatePicker({
   onApply,
   onApplyCustom,
   onCustomize,
-  onGoToPlacement,
   selections,
 }: TemplatePickerProps) {
   const visibleCustomTemplates = hideSavedBanners ? [] : customTemplates;
   const showSavedBanners = visibleCustomTemplates.length > 0;
-
-  const placementAction = onGoToPlacement ? (
-    <Button
-      className="h-auto shrink-0 px-0 text-xs"
-      onClick={onGoToPlacement}
-      type="button"
-      variant="link"
-    >
-      Assign to pages
-    </Button>
-  ) : null;
 
   let builtInTemplatesDescription =
     "Pick a starting look, then customize outlets and styling. Use Save as template to keep your design for later.";
@@ -199,9 +186,6 @@ export function TemplatePicker({
   } else if (showSavedBanners) {
     builtInTemplatesDescription =
       "Starting points from Presswall. Apply one, then customize outlets and styling.";
-  } else if (onGoToPlacement) {
-    builtInTemplatesDescription =
-      "Pick a starting look, then customize outlets and styling. Use Save as template to keep your design and assign it to specific pages.";
   }
 
   return (
@@ -210,12 +194,7 @@ export function TemplatePicker({
         {showSavedBanners ? (
           <section className="space-y-2">
             <TemplateSectionHeader
-              action={placementAction}
-              description={
-                onGoToPlacement
-                  ? "Banners you saved from the editor. Use Assign to pages to choose which banner shows on your homepage, product pages, or individual products."
-                  : "Banners you saved from the editor. You can assign them to pages later from the editor."
-              }
+              description="Banners you saved from the editor. Apply one anytime to restore its styling and outlets."
               title="Saved banners"
             />
             {visibleCustomTemplates.map((template) => (
@@ -244,7 +223,6 @@ export function TemplatePicker({
           className={showSavedBanners ? "space-y-2 border-t pt-4" : "space-y-2"}
         >
           <TemplateSectionHeader
-            action={showSavedBanners ? undefined : placementAction}
             description={builtInTemplatesDescription}
             title="Built-in templates"
           />

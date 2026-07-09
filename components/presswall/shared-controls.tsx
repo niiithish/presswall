@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import type { PresswallAlignment } from "@/lib/presswall-types";
+import { cn } from "@/lib/utils";
 
 export function sliderValue(value: number | readonly number[]): number {
   if (typeof value === "number") {
@@ -124,12 +125,22 @@ interface SegmentedAlignmentProps {
   value: PresswallAlignment;
 }
 
+/**
+ * Shared selected style for segmented controls.
+ * Avoid `secondary` — it is nearly the same gray as Shopify admin background.
+ */
+export const segmentedSelectedClassName =
+  "bg-foreground text-background hover:bg-foreground/90 hover:text-background";
+
+export const segmentedIdleClassName =
+  "text-muted-foreground hover:bg-muted/60 hover:text-foreground";
+
 export function SegmentedAlignment({
   onChange,
   value,
 }: SegmentedAlignmentProps) {
   return (
-    <fieldset className="flex w-full rounded-lg border bg-background p-0.5">
+    <fieldset className="flex w-full rounded-lg border border-border bg-card p-0.5 shadow-xs">
       {ALIGNMENT_OPTIONS.map((option) => {
         const AlignIcon = option.icon;
         const isSelected = value === option.value;
@@ -138,12 +149,15 @@ export function SegmentedAlignment({
           <Button
             aria-label={option.label}
             aria-pressed={isSelected}
-            className="h-8 min-w-0 flex-1 gap-1.5 px-2 text-xs"
+            className={cn(
+              "h-8 min-w-0 flex-1 gap-1.5 px-2 text-xs shadow-none",
+              isSelected ? segmentedSelectedClassName : segmentedIdleClassName
+            )}
             key={option.value}
             onClick={() => onChange(option.value)}
             size="sm"
             type="button"
-            variant={isSelected ? "secondary" : "ghost"}
+            variant="ghost"
           >
             <AlignIcon className="size-3.5 shrink-0" stroke={2} />
             <span className="truncate">{option.label}</span>

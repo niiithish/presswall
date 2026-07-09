@@ -56,12 +56,14 @@ describe("editor sub-page", () => {
 
   test("editor opens via App Window helpers for fullscreen overlay", () => {
     const overview = readSource("components/presswall/merchant-overview.tsx");
+    const editorView = readSource("components/presswall/editor-view.tsx");
     const appWindow = readSource("lib/editor-app-window.ts");
-    const host = readSource(
-      "components/presswall/editor-app-window-host.tsx"
-    );
+    const host = readSource("components/presswall/editor-app-window-host.tsx");
 
     expect(overview).toContain("openEditorAppWindow");
+    // Sidebar /editor deep links also promote into App Window
+    expect(editorView).toContain("openEditorAppWindow");
+    expect(editorView).toContain('router.replace(buildAdminPath("/"))');
     expect(appWindow).toContain("EDITOR_APP_WINDOW_ID");
     expect(appWindow).toContain("openEditorAppWindow");
     expect(appWindow).toContain("presswall-editor-window");

@@ -127,9 +127,7 @@ describe("onboarding completion handoff", () => {
     });
 
     fireEvent.click(view.getByRole("button", { name: "Forbes" }));
-    fireEvent.click(
-      view.getByRole("button", { name: "Continue with 1 logo" })
-    );
+    fireEvent.click(view.getByRole("button", { name: "Continue with 1 logo" }));
 
     await waitFor(() => {
       expect(view.getByText(STEP_TWO_LABEL)).toBeTruthy();

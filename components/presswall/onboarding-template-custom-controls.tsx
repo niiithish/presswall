@@ -99,21 +99,33 @@ export function OnboardingTemplateCustomControls({
       onValueChange={(value) => setActiveTab(value as CustomTabId)}
       value={activeTab}
     >
-      <div className="shrink-0 border-b px-3 py-1">
+      <div className="shrink-0 border-border/80 border-b px-2">
         <TabsList
-          className="h-auto w-full justify-start gap-0 bg-transparent p-0"
+          className="h-9 w-full justify-start gap-0.5 bg-transparent p-0"
           variant="line"
         >
-          <TabsTrigger className="px-2 py-1 text-xs" value="text">
+          <TabsTrigger
+            className="h-9 flex-none rounded-none px-3 text-xs data-active:font-semibold"
+            value="text"
+          >
             Text
           </TabsTrigger>
-          <TabsTrigger className="px-2 py-1 text-xs" value="layout">
+          <TabsTrigger
+            className="h-9 flex-none rounded-none px-3 text-xs data-active:font-semibold"
+            value="layout"
+          >
             Layout
           </TabsTrigger>
-          <TabsTrigger className="px-2 py-1 text-xs" value="look">
+          <TabsTrigger
+            className="h-9 flex-none rounded-none px-3 text-xs data-active:font-semibold"
+            value="look"
+          >
             Look
           </TabsTrigger>
-          <TabsTrigger className="px-2 py-1 text-xs" value="spacing">
+          <TabsTrigger
+            className="h-9 flex-none rounded-none px-3 text-xs data-active:font-semibold"
+            value="spacing"
+          >
             Spacing
           </TabsTrigger>
         </TabsList>
@@ -321,6 +333,7 @@ export function OnboardingTemplateCustomControls({
               <div className="grid gap-2">
                 <Label htmlFor="logo-spacing">Logo spacing</Label>
                 <Select
+                  items={LOGO_SPACING_OPTIONS}
                   onValueChange={(value) =>
                     onUpdate(
                       "logoSpacing",
@@ -329,7 +342,7 @@ export function OnboardingTemplateCustomControls({
                   }
                   value={config.logoSpacing}
                 >
-                  <SelectTrigger id="logo-spacing">
+                  <SelectTrigger className="h-9 w-full" id="logo-spacing">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -390,17 +403,6 @@ export function OnboardingTemplateCustomControls({
                 value={config.paddingX}
               />
             </div>
-          </ControlSection>
-
-          <ControlSection title="Shape">
-            <SliderField
-              label="Corner radius"
-              max={32}
-              min={0}
-              onChange={(value) => onUpdate("borderRadius", value)}
-              step={2}
-              value={config.borderRadius}
-            />
           </ControlSection>
         </TabsContent>
       </ScrollArea>

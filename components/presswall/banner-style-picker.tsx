@@ -84,10 +84,10 @@ export function BannerStylePicker({ onChange, value }: BannerStylePickerProps) {
           >
             <span
               className={cn(
-                "w-full rounded-lg border bg-background px-1 py-1 shadow-xs transition-all",
+                "w-full rounded-lg border bg-card px-1 py-1 shadow-xs transition-all",
                 isSelected
-                  ? "border-foreground/50 bg-muted/50 ring-1 ring-foreground/25"
-                  : "border-border hover:border-foreground/20 hover:bg-muted/30"
+                  ? "border-foreground bg-foreground/[0.06] ring-2 ring-foreground/30"
+                  : "border-border hover:border-foreground/25 hover:bg-muted/40"
               )}
             >
               <Illustration active={isSelected} />
@@ -96,7 +96,7 @@ export function BannerStylePicker({ onChange, value }: BannerStylePickerProps) {
               className={cn(
                 "text-xs leading-tight",
                 isSelected
-                  ? "font-medium text-foreground"
+                  ? "font-semibold text-foreground"
                   : "text-muted-foreground"
               )}
             >

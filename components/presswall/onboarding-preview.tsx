@@ -121,7 +121,6 @@ export function OnboardingPreview({
       style={{
         backgroundColor: previewColors.backgroundColor,
         color: previewColors.textColor,
-        borderRadius: `${config.borderRadius}px`,
         padding: `${paddingY}px ${paddingX}px`,
       }}
     >

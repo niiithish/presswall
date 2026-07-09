@@ -171,10 +171,13 @@ const OutletTile = memo(function OutletTile({
   } else if (selected) {
     tileClass = cn(
       tileClass,
-      "border-border bg-muted/30 ring-1 ring-border/60"
+      "border-foreground bg-card ring-2 ring-foreground/25"
     );
   } else {
-    tileClass = cn(tileClass, "hover:border-border hover:bg-muted/20");
+    tileClass = cn(
+      tileClass,
+      "border-border bg-card hover:border-foreground/20 hover:bg-muted/20"
+    );
   }
 
   return (
@@ -221,8 +224,8 @@ const CustomLogoTile = memo(function CustomLogoTile({
         className={cn(
           "relative flex h-10 min-w-0 flex-1 items-center justify-center rounded-md border px-1.5 transition-colors",
           selected
-            ? "border-border bg-muted/30 ring-1 ring-border/60"
-            : "hover:border-border hover:bg-muted/20"
+            ? "border-foreground bg-card ring-2 ring-foreground/25"
+            : "border-border bg-card hover:border-foreground/20 hover:bg-muted/20"
         )}
         onClick={onToggle}
         title={actionLabel}
@@ -259,7 +262,7 @@ function UploadLogoHint({
   const hasSearch = Boolean(searchQuery?.trim());
   return (
     <button
-      className="flex w-full flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-border bg-muted/20 px-4 py-7 text-center transition-colors hover:border-foreground/25 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      className="flex w-full flex-col items-center justify-center gap-2.5 rounded-xl border border-border border-dashed bg-muted/20 px-4 py-7 text-center transition-colors hover:border-foreground/25 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
       onClick={onUpload}
       type="button"
     >

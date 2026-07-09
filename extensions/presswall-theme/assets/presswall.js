@@ -123,7 +123,6 @@ const INLINE_RGB_COLOR_PATTERN =
       "transparent"
     );
     const textColor = sanitizeCssColor(config.textColor, "#111111");
-    const borderRadius = sanitizeCssSize(config.borderRadius, 0);
     const paddingY = sanitizeCssSize(config.paddingY, 16);
     const paddingX = sanitizeCssSize(config.paddingX, 16);
     const contentMaxWidth = sanitizeCssSize(config.contentMaxWidth, 840);
@@ -148,7 +147,6 @@ const INLINE_RGB_COLOR_PATTERN =
     const style = [
       `background:${backgroundColor}`,
       `color:${textColor}`,
-      `border-radius:${borderRadius}px`,
       `--presswall-padding-y:${paddingY}px`,
       `--presswall-padding-x:${paddingX}px`,
       `--presswall-logo-height:${sanitizeCssSize(config.logoHeight, 28)}px`,

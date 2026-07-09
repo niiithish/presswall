@@ -1,10 +1,7 @@
 import { z } from "zod";
-import {
-  migrateLegacyColorMode,
-  rawColorModeSchema,
-} from "@/lib/logo-variant";
-import { isDarkBackgroundColor } from "@/lib/presswall-logo-contrast";
+import { migrateLegacyColorMode, rawColorModeSchema } from "@/lib/logo-variant";
 import { normalizePresswallLayout } from "@/lib/normalize-presswall-layout";
+import { isDarkBackgroundColor } from "@/lib/presswall-logo-contrast";
 import {
   cssColorSchema,
   MAX_CUSTOM_LOGO_SVG_LENGTH,
@@ -47,7 +44,6 @@ export const presswallConfigSchema = z
     logoAlignment: alignmentSchema,
     backgroundColor: cssColorSchema,
     textColor: cssColorSchema,
-    borderRadius: z.number().int().min(0).max(32),
     paddingY: z.number().int().min(0).max(80),
     paddingX: z.number().int().min(0).max(80),
     contentMaxWidth: z.number().int().min(360).max(1200),

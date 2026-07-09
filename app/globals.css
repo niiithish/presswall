@@ -400,6 +400,21 @@
   clip: rect(0, 0, 0, 0) !important;
 }
 
+/* ui-save-bar is lifted into admin chrome — never show raw button text in-app.
+   Target by id only (App Bridge rejects class/className on the element). */
+#presswall-editor-save-bar {
+  position: absolute !important;
+  display: none !important;
+  inline-size: 0 !important;
+  block-size: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  clip: rect(0, 0, 0, 0) !important;
+}
+
 .toaster[data-sonner-toaster] {
   top: auto !important;
   right: auto !important;

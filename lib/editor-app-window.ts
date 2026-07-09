@@ -78,8 +78,11 @@ function getEditorAppWindowElement(): HTMLElement | null {
 /**
  * Opens the press logo editor in Shopify's fullscreen App Window overlay.
  * Falls back to in-admin navigation when App Window is unavailable.
+ *
+ * @returns `true` when the App Window overlay was shown; `false` when we fell
+ * back to (or stayed on) the in-iframe editor route.
  */
-export async function openEditorAppWindow(): Promise<void> {
+export async function openEditorAppWindow(): Promise<boolean> {
   const element = getEditorAppWindowElement() as
     | (HTMLElement & {
         src?: string;
@@ -88,8 +91,16 @@ export async function openEditorAppWindow(): Promise<void> {
     | null;
 
   if (!element || typeof element.show !== "function") {
+    // Avoid a navigation loop when the sidebar already landed us on /editor.
+    if (
+      typeof window !== "undefined" &&
+      window.location.pathname.startsWith("/editor")
+    ) {
+      return false;
+    }
+
     await navigateAdminPath("/editor");
-    return;
+    return false;
   }
 
   let token: string | null = null;
@@ -103,11 +114,12 @@ export async function openEditorAppWindow(): Promise<void> {
   const src = buildEditorAppWindowSrc();
   if (!token) {
     redirectToSessionBounce(src);
-    return;
+    return false;
   }
 
   const url = new URL(src, window.location.origin);
   url.searchParams.set("id_token", token);
   element.src = `${url.pathname}${url.search}`;
   await element.show();
+  return true;
 }

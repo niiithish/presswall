@@ -6,7 +6,6 @@ import {
   IconLoader2,
 } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
-import { BannerAssignmentsPanel } from "@/components/presswall/banner-assignments-panel";
 import { DeviceToggle } from "@/components/presswall/device-toggle";
 import { OnboardingPreviewCanvas } from "@/components/presswall/onboarding-preview-canvas";
 import { OnboardingTemplateCustomControls } from "@/components/presswall/onboarding-template-custom-controls";
@@ -31,13 +30,13 @@ interface EditorWorkspaceProps {
   fullBleed?: boolean;
 }
 
-type EditorTab = "outlets" | "templates" | "custom" | "placement";
+type EditorTab = "custom" | "outlets" | "templates";
 
 export function EditorWorkspace({
   editor,
   fullBleed = false,
 }: EditorWorkspaceProps) {
-  const [activeTab, setActiveTab] = useState<EditorTab>("outlets");
+  const [activeTab, setActiveTab] = useState<EditorTab>("custom");
   const [deviceMode, setDeviceMode] = useState<PresswallViewport>("desktop");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [lastSavedConfig, setLastSavedConfig] =
@@ -133,7 +132,7 @@ export function EditorWorkspace({
           </div>
         </div>
 
-        {/* Side panel — outlets / templates / style / placement */}
+        {/* Side panel — style / outlets / templates */}
         <div className="flex min-h-0 min-w-0 flex-[2] flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
           <Tabs
             className="flex min-h-0 flex-1 flex-col"
@@ -141,7 +140,8 @@ export function EditorWorkspace({
             value={activeTab}
           >
             <div className="shrink-0 border-b p-3">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="custom">Style</TabsTrigger>
                 <TabsTrigger value="outlets">
                   Outlets
                   {editor.selected.length > 0 ? (
@@ -151,10 +151,23 @@ export function EditorWorkspace({
                   ) : null}
                 </TabsTrigger>
                 <TabsTrigger value="templates">Templates</TabsTrigger>
-                <TabsTrigger value="custom">Style</TabsTrigger>
-                <TabsTrigger value="placement">By page</TabsTrigger>
               </TabsList>
             </div>
+
+            <TabsContent
+              className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
+              value="custom"
+            >
+              <OnboardingTemplateCustomControls
+                config={editor.config}
+                matchedTemplateName={
+                  editor.matchedTemplateId
+                    ? getPresswallTemplate(editor.matchedTemplateId).name
+                    : undefined
+                }
+                onUpdate={editor.updateConfig}
+              />
+            </TabsContent>
 
             <TabsContent
               className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
@@ -204,32 +217,9 @@ export function EditorWorkspace({
                   onApply={editor.applyTemplate}
                   onApplyCustom={editor.applyCustomBanner}
                   onCustomize={() => setActiveTab("custom")}
-                  onGoToPlacement={() => setActiveTab("placement")}
                   selections={editor.selections}
                 />
               </div>
-            </TabsContent>
-
-            <TabsContent
-              className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
-              value="placement"
-            >
-              <BannerAssignmentsPanel />
-            </TabsContent>
-
-            <TabsContent
-              className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
-              value="custom"
-            >
-              <OnboardingTemplateCustomControls
-                config={editor.config}
-                matchedTemplateName={
-                  editor.matchedTemplateId
-                    ? getPresswallTemplate(editor.matchedTemplateId).name
-                    : undefined
-                }
-                onUpdate={editor.updateConfig}
-              />
             </TabsContent>
           </Tabs>
         </div>
@@ -244,7 +234,6 @@ export function EditorWorkspace({
         }}
         open={saveDialogOpen}
         selections={editor.selections}
-        showPlacementHint
       />
 
       <ReplaceLogoDialog

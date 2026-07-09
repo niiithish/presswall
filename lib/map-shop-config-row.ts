@@ -38,7 +38,6 @@ export function mapShopConfigRow(
     logoAlignment: row.logoAlignment ?? row.headingAlignment,
     backgroundColor: row.backgroundColor,
     textColor: row.textColor,
-    borderRadius: row.borderRadius,
     paddingY: row.paddingY,
     paddingX: row.paddingX,
     contentMaxWidth:

@@ -197,8 +197,8 @@ export function ReplaceLogoDialog({
                             : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50",
                           selected &&
                             (whiteOnDark
-                              ? "ring-1 ring-neutral-300"
-                              : "border-foreground ring-1 ring-foreground/25")
+                              ? "ring-2 ring-neutral-200"
+                              : "border-foreground ring-2 ring-foreground/30")
                         )}
                         key={publisher.id}
                         onClick={() =>
@@ -254,7 +254,7 @@ export function ReplaceLogoDialog({
                         className={cn(
                           "relative flex h-12 items-center justify-center rounded-md border border-zinc-200 bg-white px-1.5 transition-colors",
                           selected
-                            ? "border-foreground ring-1 ring-foreground/25"
+                            ? "border-foreground ring-2 ring-foreground/30"
                             : "hover:border-zinc-300 hover:bg-zinc-50"
                         )}
                         key={logo.id}

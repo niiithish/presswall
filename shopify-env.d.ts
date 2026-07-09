@@ -25,6 +25,12 @@ declare global {
           title?: string;
         }>
       >;
+      saveBar?: {
+        hide: (id: string) => Promise<void>;
+        leaveConfirmation: () => Promise<void>;
+        show: (id: string) => Promise<void>;
+        toggle: (id: string) => Promise<void>;
+      };
     };
   }
 
@@ -47,6 +53,10 @@ declare global {
       };
       "s-link": SAppNavLinkAttributes;
       "s-page": SPageAttributes;
+      "ui-save-bar": {
+        id?: string;
+        children?: React.ReactNode;
+      };
     }
   }
 }
@@ -71,6 +81,10 @@ declare module "react" {
       };
       "s-link": SAppNavLinkAttributes;
       "s-page": SPageAttributes;
+      "ui-save-bar": {
+        id?: string;
+        children?: React.ReactNode;
+      };
     }
   }
 }

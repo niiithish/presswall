@@ -14,7 +14,6 @@ const BASE_PRESSWALL_CONFIG = {
   logoAlignment: "center",
   backgroundColor: "transparent",
   textColor: "#111111",
-  borderRadius: 0,
   paddingY: 40,
   paddingX: 24,
   contentMaxWidth: 840,

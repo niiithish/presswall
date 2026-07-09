@@ -1,8 +1,9 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { EditorShellSkeleton } from "@/components/presswall/editor-shell-skeleton";
+import { EditorUnsavedGuard } from "@/components/presswall/editor-unsaved-guard";
 import { EditorWorkspace } from "@/components/presswall/editor-workspace";
 import { ThemeActivationBanner } from "@/components/presswall/theme-activation-banner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -15,21 +16,71 @@ import {
 } from "@/components/ui/empty";
 import { usePresswallEditor } from "@/hooks/use-presswall-editor";
 import { navigateAdminPath } from "@/lib/admin-navigation";
-import { isAppWindowRequest } from "@/lib/editor-app-window";
+import { buildAdminPath } from "@/lib/admin-path";
+import {
+  isAppWindowRequest,
+  openEditorAppWindow,
+} from "@/lib/editor-app-window";
 
 export function EditorView() {
   const editor = usePresswallEditor();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const inAppWindow = useMemo(
     () => isAppWindowRequest(searchParams),
     [searchParams]
   );
+  /**
+   * Sidebar / deep-link hits `/editor` inside the admin iframe. Promote that
+   * navigation into Shopify App Window (same as Home → Open editor). Until
+   * promotion finishes we show a shell; if App Window is unavailable we stay
+   * on the in-iframe editor.
+   */
+  const [iframeFallback, setIframeFallback] = useState(false);
+
+  useEffect(() => {
+    if (inAppWindow) {
+      return;
+    }
+
+    let cancelled = false;
+
+    openEditorAppWindow()
+      .then((opened) => {
+        if (cancelled) {
+          return;
+        }
+
+        if (opened) {
+          // Soft-navigate the host frame to Home so closing the overlay
+          // returns to the overview (root layout keeps <s-app-window> mounted).
+          router.replace(buildAdminPath("/"));
+          return;
+        }
+
+        setIframeFallback(true);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIframeFallback(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [inAppWindow, router]);
 
   useEffect(() => {
     if (!editor.isLoading && editor.needsOnboarding) {
       navigateAdminPath("/").catch(() => undefined);
     }
   }, [editor.isLoading, editor.needsOnboarding]);
+
+  // Sidebar entry: wait for App Window promotion (or fallback) before painting.
+  if (!(inAppWindow || iframeFallback)) {
+    return <EditorShellSkeleton />;
+  }
 
   if (editor.isLoading || editor.needsOnboarding) {
     return <EditorShellSkeleton />;
@@ -60,42 +111,20 @@ export function EditorView() {
     );
   }
 
-  const saveDisabled = !editor.isDirty || editor.isLoading || editor.isSaving;
-
   return (
     <div className="flex h-svh flex-col overflow-hidden bg-background">
       {/*
-        App Bridge title bar for fullscreen App Window (and admin chrome on
-        the regular /editor route). Save stays in the preview toolbar for the
-        in-app control pattern; primary action mirrors it in the native bar.
+        Title only — App Window action slots only accept Shopify `s-button`
+        chrome (Polaris), not our custom Button. Save / Discard live in the
+        live-preview toolbar via components/ui/button.
       */}
-      <s-page heading="Edit press logos">
-        {editor.isDirty ? (
-          <s-badge slot="accessory" tone="warning">
-            Unsaved
-          </s-badge>
-        ) : null}
-        <s-button
-          disabled={saveDisabled}
-          onClick={() => {
-            editor.save().catch(() => undefined);
-          }}
-          slot="primary-action"
-        >
-          {editor.isSaving ? "Saving..." : "Save"}
-        </s-button>
-        {editor.isDirty ? (
-          <s-button
-            disabled={saveDisabled}
-            onClick={() => {
-              editor.discard();
-            }}
-            slot="secondary-actions"
-          >
-            Discard
-          </s-button>
-        ) : null}
-      </s-page>
+      <s-page heading="Edit press logos" />
+
+      <EditorUnsavedGuard
+        isDirty={editor.isDirty}
+        onDiscard={editor.discard}
+        onSave={editor.save}
+      />
 
       {inAppWindow ? null : <ThemeActivationBanner variant="compact" />}
 
