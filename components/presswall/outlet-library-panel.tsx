@@ -347,8 +347,8 @@ export function OutletLibraryPanel({
 
   const selectionHint =
     selected.length === 0
-      ? "Select at least one outlet."
-      : "Order follows your selection sequence.";
+      ? "Click logos below to add them to your strip."
+      : `${selected.length} selected · click again to remove · order = click order`;
 
   const handleUploadAdd = async (name: string, svg: string) => {
     const saved = await onUploadCustom(name, svg);

@@ -14,13 +14,30 @@ export function OnboardingOutletsStep({
   editor,
   onNext,
 }: OnboardingOutletsStepProps) {
-  const canContinue = editor.selected.length > 0;
+  const selectedCount = editor.selected.length;
+  const canContinue = selectedCount > 0;
 
   return (
     <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4">
-      <p className="shrink-0 text-muted-foreground text-xs">
-        Step 1 of 3 — Add your press logos
-      </p>
+      <header className="shrink-0 space-y-1.5">
+        <p className="text-muted-foreground text-xs">Step 1 of 3</p>
+        <h1 className="font-semibold text-base tracking-tight">
+          Choose which press logos to show on your store
+        </h1>
+        <p className="max-w-xl text-muted-foreground text-sm leading-relaxed">
+          Pick outlets that have featured your brand. These logos appear in an
+          “As seen on” strip on your storefront so shoppers trust you faster.
+          Click a logo to add it — you can change the set anytime later.
+        </p>
+        <ul className="flex flex-wrap gap-x-4 gap-y-1 pt-0.5 text-[0.6875rem] text-muted-foreground">
+          <li>
+            <span className="font-medium text-foreground/80">Tip:</span> 4–8
+            logos works well for most stores
+          </li>
+          <li>Order follows the order you click</li>
+          <li>Missing a logo? Upload your own</li>
+        </ul>
+      </header>
 
       <div className="flex min-h-0 flex-1 flex-col rounded-xl border bg-card p-4 shadow-sm">
         <OutletLibraryPanel
@@ -48,7 +65,11 @@ export function OnboardingOutletsStep({
         className="shrink-0 pt-4 pb-6"
         compact
         nextDisabled={!canContinue}
-        nextLabel="Next"
+        nextLabel={
+          canContinue
+            ? `Continue with ${selectedCount} logo${selectedCount === 1 ? "" : "s"}`
+            : "Select logos to continue"
+        }
         onNext={onNext}
       />
     </div>
